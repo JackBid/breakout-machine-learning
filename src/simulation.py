@@ -10,6 +10,7 @@ env.frameskip = 1
 
 agent = trivial.TrivialAgent()
 trivial = True
+record = True
 
 def arrToString(arr):
     arrString = ''
@@ -38,7 +39,7 @@ for i_episode in range(5):
 
         observation, reward, done, info = env.step(action)
         
-        if done and trivial:
+        if done and record:
             print("Episode finished after {} timesteps".format(t+1))
             if t+1 > 2000:
                 ramData = open("../res/training data/ram.txt","a")
