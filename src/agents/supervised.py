@@ -25,6 +25,7 @@ class SupervisedAgent():
     def __init__(self):
         self.net = Net()
         self.net = self.net.float()
+        self.net.load_state_dict(torch.load('../res/models/supervised_net.pth'))
 
         self.trainingData = self.loadTrainingData('../res/training data/ram.txt')
         self.testingData = self.loadTestingData('../res/training data/action.txt')
@@ -55,13 +56,20 @@ class SupervisedAgent():
         return testing
 
     def train(self):
-
+        correct = 0 
         running_loss = 0.0
         for i in range(0, len(self.testingData)):
             
             self.optimizer.zero_grad()
 
-            outputs = self.net(self.trainingData[i].float()).unsqueeze(dim=0)
+            outputs = self.net(self.trainingData[i].float())
+            
+            answer = int(torch.max(outputs, 0)[1])
+            
+            if answer == int(self.testingData[i].data[0]):
+                correct += 1
+
+            outputs = outputs.unsqueeze(dim=0)
             self.testingData[i].unsqueeze(dim=0)
 
             loss = self.criterion(outputs, self.testingData[i])
@@ -69,10 +77,15 @@ class SupervisedAgent():
             self.optimizer.step()
 
             running_loss += loss.item()
-            if i % 20 == 19:    # print every 2000 mini-batches
+            if i % 100 == 99:    # print every 2000 mini-batches
                 print('[%d, %5d] loss: %.3f' %
                     (0 + 1, i + 1, running_loss / 2000))
                 running_loss = 0.0
+
+        PATH = '../res/models/supervised_net.pth'
+        torch.save(self.net.state_dict(), PATH)
+        print(str(correct / len(self.trainingData) * 100) + '% of cases correct')
+
     
     def action(self, observation):
         observationTensor = torch.tensor(observation)
