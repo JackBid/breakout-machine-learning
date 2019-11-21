@@ -9,9 +9,9 @@ import os
 env = gym.make('Breakout-ram-v0')
 env.frameskip = 1
 
-agent = trivial.TrivialAgent()
-trivial = True
-record = True
+agent = supervised.SupervisedAgent()
+trivial = False
+record = False
 
 def arrToString(arr):
     arrString = ''

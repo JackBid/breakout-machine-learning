@@ -53,10 +53,13 @@ class SupervisedAgent():
     def train(self):
         for i in range(0, 10):
             print(self.trainingData[i])
-            print(self.testingData[i])#
+            print(self.testingData[i])
     
     def action(self, observation):
-        return 0
+        observationTensor = torch.tensor(observation)
+        actionWeights = self.net(observationTensor.float())
+        maxVal = torch.max(actionWeights, 0)
+        return int(maxVal[1])
 
 
 
