@@ -2,6 +2,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.optim as optim
 
 class Net(nn.Module):
 
@@ -28,6 +29,9 @@ class SupervisedAgent():
         self.trainingData = self.loadTrainingData('../res/training data/ram.txt')
         self.testingData = self.loadTestingData('../res/training data/action.txt')
 
+        self.criterion = nn.CrossEntropyLoss()
+        self.optimizer = optim.SGD(self.net.parameters(), lr=0.001, momentum=0.9)
+
     def loadTrainingData(self, path):
         training = []
 
@@ -46,21 +50,35 @@ class SupervisedAgent():
 
         for num in testingFile.readline().split(' ')[:-1]:
             data = int(num)
-            testing.append(torch.tensor(data, dtype=torch.uint8))
+            testing.append(torch.torch.LongTensor([data]))
         
         return testing
 
     def train(self):
-        for i in range(0, 10):
-            print(self.trainingData[i])
-            print(self.testingData[i])
+
+        running_loss = 0.0
+        for i in range(0, len(self.testingData)):
+            
+            self.optimizer.zero_grad()
+
+            outputs = self.net(self.trainingData[i].float()).unsqueeze(dim=0)
+            self.testingData[i].unsqueeze(dim=0)
+
+            loss = self.criterion(outputs, self.testingData[i])
+            loss.backward()
+            self.optimizer.step()
+
+            running_loss += loss.item()
+            if i % 20 == 19:    # print every 2000 mini-batches
+                print('[%d, %5d] loss: %.3f' %
+                    (0 + 1, i + 1, running_loss / 2000))
+                running_loss = 0.0
     
     def action(self, observation):
         observationTensor = torch.tensor(observation)
         actionWeights = self.net(observationTensor.float())
         maxVal = torch.max(actionWeights, 0)
         return int(maxVal[1])
-
 
 
 

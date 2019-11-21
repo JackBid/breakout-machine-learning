@@ -10,6 +10,7 @@ env = gym.make('Breakout-ram-v0')
 env.frameskip = 1
 
 agent = supervised.SupervisedAgent()
+agent.train()
 trivial = False
 record = False
 
@@ -19,13 +20,13 @@ def arrToString(arr):
         arrString += str(val) + ' '
     return arrString
 
-for i_episode in range(5):
+for i_episode in range(4):
     observation = env.reset()
 
     observations = []
     actions = []
     
-    for t in range(3000):
+    for t in range(500):
         
         env.render()
 
