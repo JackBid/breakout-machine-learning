@@ -1,4 +1,5 @@
 import agents.trivial as trivial
+import agents.supervised as supervised
 import config
 import gym
 import time

@@ -19,45 +19,44 @@ class Net(nn.Module):
         x = self.fc3(x)
         return x            
 
-def loadTrainingData(path):
-    training = []
+class SupervisedAgent():
 
-    trainingFile = open(path, "r")
+    def __init__(self):
+        self.net = Net()
+        self.net = self.net.float()
 
-    for ram in trainingFile:
-        data = [int(numeric_string) for numeric_string in ram.split(' ')[:-1]]
-        training.append(torch.tensor(data, dtype=torch.uint8))
+        self.trainingData = self.loadTrainingData('../res/training data/ram.txt')
+        self.testingData = self.loadTestingData('../res/training data/action.txt')
+
+    def loadTrainingData(self, path):
+        training = []
+
+        trainingFile = open(path, "r")
+
+        for ram in trainingFile:
+            data = [int(numeric_string) for numeric_string in ram.split(' ')[:-1]]
+            training.append(torch.tensor(data, dtype=torch.uint8))
+        
+        return training
+
+    def loadTestingData(self, path):
+        testing = []
+
+        testingFile = open(path, "r")
+
+        for num in testingFile.readline().split(' ')[:-1]:
+            data = int(num)
+            testing.append(torch.tensor(data, dtype=torch.uint8))
+        
+        return testing
+
+    def train(self):
+        for i in range(0, 10):
+            print(self.trainingData[i])
+            print(self.testingData[i])#
     
-    return training
-
-def loadTestingData(path):
-    testing = []
-
-    testingFile = open(path, "r")
-
-    for num in testingFile.readline().split(' ')[:-1]:
-        data = int(num)
-        testing.append(torch.tensor(data, dtype=torch.uint8))
-    
-    return testing
-    
-
-#../res/training data/ram.txt
-
-def train():
-
-    net = Net()
-    net = net.float()
-
-    trainingData = loadTrainingData('../res/training data/ram.txt')
-    testingData = loadTestingData('../res/training data/action.txt')
-
-    for i in range(0, 10):
-        print(trainingData[i])
-        print(testingData[i])
-
-train()
-
+    def action(self, observation):
+        return 0
 
 
 
