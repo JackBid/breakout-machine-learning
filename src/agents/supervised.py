@@ -8,17 +8,17 @@ class Net(nn.Module):
 
     def __init__(self):
         super(Net, self).__init__()
-
-        # an affine operation: y = Wx + b
-        self.fc1 = nn.Linear(128, 64)  # 6*6 from image dimension
+        self.fc1 = nn.Linear(128, 64) 
         self.fc2 = nn.Linear(64, 32)
         self.fc3 = nn.Linear(32, 4)
 
     def forward(self, x):
         x = F.relu(self.fc1(x))
+       # print(x)
         x = F.relu(self.fc2(x))
-        x = self.fc3(x)
-        return x            
+      #  print(x)
+        x = F.relu(self.fc3(x))      
+        return x     
 
 class SupervisedAgent():
 
@@ -30,7 +30,7 @@ class SupervisedAgent():
         self.trainingData = self.loadTrainingData('../res/training data/ram.txt')
         self.testingData = self.loadTestingData('../res/training data/action.txt')
 
-        self.criterion = nn.CrossEntropyLoss()
+        self.criterion = nn.L1Loss()
         self.optimizer = optim.SGD(self.net.parameters(), lr=0.001, momentum=0.9)
 
     def loadTrainingData(self, path):
@@ -56,40 +56,41 @@ class SupervisedAgent():
         return testing
 
     def train(self):
-        correct = 0 
-        running_loss = 0.0
-        for i in range(0, len(self.testingData)):
-            
-            self.optimizer.zero_grad()
 
-            outputs = self.net(self.trainingData[i].float())
-            
-            answer = int(torch.max(outputs, 0)[1])
-            
-            if answer == int(self.testingData[i].data[0]):
-                correct += 1
+        for epoch in range(0, 3):
+            running_loss = 0.0
+            for i in range(0, len(self.trainingData)):
+                
+                # zero the parameter gradients
+                self.optimizer.zero_grad()
+                
+                outputs = self.net(self.trainingData[i].float())
+                answer = self.testingData[i].clone()
 
-            outputs = outputs.unsqueeze(dim=0)
-            self.testingData[i].unsqueeze(dim=0)
+                target = torch.zeros(4)
+                target[answer] = 1
+                
+                outputs = F.softmax(outputs, dim=0)
+                #print(outputs)
+                #print(target)
+                loss = self.criterion(outputs, target)
+                #print('loss: ' + str(loss))
+                loss.backward()
+                self.optimizer.step()
 
-            loss = self.criterion(outputs, self.testingData[i])
-            loss.backward()
-            self.optimizer.step()
+                running_loss += loss.item()
+                if i % 2000 == 1999:    # print every 2000 mini-batches
+                    print('[%d, %5d] loss: %.3f' %
+                    (epoch + 1, i + 1, running_loss / 2000))
+                    running_loss = 0.0
 
-            running_loss += loss.item()
-            if i % 100 == 99:    # print every 2000 mini-batches
-                print('[%d, %5d] loss: %.3f' %
-                    (0 + 1, i + 1, running_loss / 2000))
-                running_loss = 0.0
-
-        PATH = '../res/models/supervised_net.pth'
-        torch.save(self.net.state_dict(), PATH)
-        print(str(correct / len(self.trainingData) * 100) + '% of cases correct')
-
+                    PATH = '../res/models/supervised_net.pth'
+                    torch.save(self.net.state_dict(), PATH)
     
     def action(self, observation):
         observationTensor = torch.tensor(observation)
         actionWeights = self.net(observationTensor.float())
+        print(actionWeights)
         maxVal = torch.max(actionWeights, 0)
         return int(maxVal[1])
 
