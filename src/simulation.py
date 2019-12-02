@@ -1,5 +1,5 @@
-import agents.trivial as trivial
-import agents.supervised as supervised
+from agents.trivial import TrivialAgent
+from agents.supervised import SupervisedAgent
 import config
 import gym
 import time
@@ -9,7 +9,7 @@ import os
 env = gym.make('Breakout-ram-v0')
 env.frameskip = 1
 
-agent = supervised.SupervisedAgent()
+agent = SupervisedAgent()
 agent.train()
 trivial = False
 record = False
@@ -20,13 +20,13 @@ def arrToString(arr):
         arrString += str(val) + ' '
     return arrString
 
-for i_episode in range(4):
+for i_episode in range(10):
     observation = env.reset()
 
     observations = []
     actions = []
     
-    for t in range(500):
+    for t in range(2000):
         
         env.render()
 
@@ -43,7 +43,7 @@ for i_episode in range(4):
         
         if done and record:
             print("Episode finished after {} timesteps".format(t+1))
-            if t+1 > 2000:
+            if t+1 > 1000:
                 ramData = open("../res/training data/ram.txt","a")
                 actionData = open("../res/training data/action.txt", "a")
                 
