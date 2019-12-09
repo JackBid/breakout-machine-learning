@@ -31,8 +31,11 @@ for i_episode in range(10):
         env.render()
 
         observations.append(observation)
+        ballY = int(observation[101])
         
-        if trivial:
+        if t == 0 or ballY > 200 or ballY == 0:
+           action = config.ACTION_FIRE
+        elif trivial:
             action = agent.action(observation, t, config.TRIVIAL_THRESHOLD)
         else:
             action = agent.action(observation)
