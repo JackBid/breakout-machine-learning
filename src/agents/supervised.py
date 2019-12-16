@@ -12,11 +12,8 @@ class Net(nn.Module):
         self.fc2 = nn.Linear(6, 4)
 
     def forward(self, x):
-        #print(x)
         x = F.relu(self.fc1(x))
-       # print(x)
         x = F.relu(self.fc2(x))
-      #  print(x)
         return x
 
 class SupervisedAgent():
