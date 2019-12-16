@@ -10,7 +10,7 @@ env = gym.make('Breakout-ram-v0')
 env.frameskip = 1
 
 agent = SupervisedAgent()
-agent.train()
+#agent.train()
 trivial = False
 record = False
 
@@ -34,7 +34,7 @@ for i_episode in range(10):
         ballY = int(observation[101])
         
         if t == 0 or ballY > 200 or ballY == 0:
-           action = config.ACTION_FIRE
+          action = config.ACTION_FIRE
         elif trivial:
             action = agent.action(observation, t, config.TRIVIAL_THRESHOLD)
         else:

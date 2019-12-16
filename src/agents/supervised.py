@@ -74,10 +74,6 @@ class SupervisedAgent():
                 #outputs = F.softmax(outputs, dim=0)
                 outputs = outputs.unsqueeze(dim=0)
 
-                #print(outputs)
-                #print(target)
-                #print()
-
                 loss = self.criterion(outputs, target)
                 #print('loss: ' + str(loss))
                 loss.backward()
