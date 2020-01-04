@@ -8,16 +8,27 @@ from nets import FC364
 
 class SupervisedAgent():
 
-    def __init__(self, network='fc364', load=True):
+    def __init__(self, network='fc364', load=True, save=True, saveFile=''):
+
+        # Start by processing the arguments in order to initiate the network correctly.
+        # This allows users to choose what network/model should be used,
+        # and whether to load an existing trained model
+
+        # If no save file is provided then use a default file depending on the network type specified
+        if saveFile == '':
+            if network == 'fc364':
+                self.saveFile = '../res/models/fc364_visualisation.pth'
+        else:
+            self.saveFile = '../res/models/' + network + '_' + saveFile + '.pth'
 
         self.load = load
+        self.save = save
 
         if network.lower() == 'fc364':
             self.net = FC364()
             self.net = self.net.float()
-            if load:
-                self.net.load_state_dict(torch.load('../res/models/fc364_supervised_net.pth'))
-
+            if self.load:
+                self.net.load_state_dict(torch.load(self.saveFile))
 
         self.trainingData = self.loadTrainingData('../res/training data/ram.txt')
         self.testingData = self.loadTestingData('../res/training data/action.txt')
@@ -47,9 +58,9 @@ class SupervisedAgent():
         
         return testing
 
-    def train(self):
+    def train(self, epochs):
 
-        for epoch in range(0, 3):
+        for epoch in range(0, epochs):
             running_loss = 0.0
             for i in range(0, len(self.trainingData)):
                 # zero the parameter gradients
@@ -78,9 +89,8 @@ class SupervisedAgent():
                     (epoch + 1, i + 1, running_loss / 2000))
                     running_loss = 0.0
 
-                    if self.load:
-                        PATH = '../res/models/fc364_supervised_net.pth'
-                        torch.save(self.net.state_dict(), PATH)
+                    if self.save:
+                        torch.save(self.net.state_dict(), self.saveFile)
     
     def action(self, observation):
         observationTensor = torch.tensor(observation)

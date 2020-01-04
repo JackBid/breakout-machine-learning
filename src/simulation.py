@@ -10,7 +10,7 @@ env = gym.make('Breakout-ram-v0')
 env.frameskip = 1
 
 agent = SupervisedAgent('fc364', True)
-#agent.train()
+#agent.train(1)
 trivial = False
 record = False
 
@@ -26,7 +26,9 @@ for i_episode in range(10):
     observations = []
     actions = []
     
-    for t in range(2000):
+    t = 0
+
+    for t in range(3000):
         
         env.render()
 
