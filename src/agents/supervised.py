@@ -4,24 +4,20 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-class Net(nn.Module):
-
-    def __init__(self):
-        super(Net, self).__init__()
-        self.fc1 = nn.Linear(3, 6) 
-        self.fc2 = nn.Linear(6, 4)
-
-    def forward(self, x):
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        return x
+from nets import FC364
 
 class SupervisedAgent():
 
-    def __init__(self):
-        self.net = Net()
-        self.net = self.net.float()
-        self.net.load_state_dict(torch.load('../res/models/supervised_net.pth'))
+    def __init__(self, network='fc364', load=True):
+
+        self.load = load
+
+        if network.lower() == 'fc364':
+            self.net = FC364()
+            self.net = self.net.float()
+            if load:
+                self.net.load_state_dict(torch.load('../res/models/fc364_supervised_net.pth'))
+
 
         self.trainingData = self.loadTrainingData('../res/training data/ram.txt')
         self.testingData = self.loadTestingData('../res/training data/action.txt')
@@ -82,8 +78,9 @@ class SupervisedAgent():
                     (epoch + 1, i + 1, running_loss / 2000))
                     running_loss = 0.0
 
-                    PATH = '../res/models/supervised_net.pth'
-                    torch.save(self.net.state_dict(), PATH)
+                    if self.load:
+                        PATH = '../res/models/fc364_supervised_net.pth'
+                        torch.save(self.net.state_dict(), PATH)
     
     def action(self, observation):
         observationTensor = torch.tensor(observation)
@@ -95,11 +92,7 @@ class SupervisedAgent():
         tensorInput = torch.tensor([ballMid, ballY, paddleMid])
         outputs = self.net(tensorInput.float())
 
-        print(outputs)
-
         maxVal = torch.max(outputs, 0)
-        print(maxVal[1])
-
         return int(maxVal[1])
 
 

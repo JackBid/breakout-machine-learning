@@ -9,7 +9,7 @@ import os
 env = gym.make('Breakout-ram-v0')
 env.frameskip = 1
 
-agent = SupervisedAgent()
+agent = SupervisedAgent('fc364', True)
 #agent.train()
 trivial = False
 record = False
