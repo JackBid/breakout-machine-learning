@@ -9,9 +9,10 @@ import os
 env = gym.make('Breakout-ram-v0')
 env.frameskip = 1
 
-agent = SupervisedAgent('fc364', True)
+agent = TrivialAgent()
+#agent = SupervisedAgent('fc364', True)
 #agent.train(1)
-trivial = False
+trivial = True
 record = False
 
 def arrToString(arr):
@@ -20,15 +21,19 @@ def arrToString(arr):
         arrString += str(val) + ' '
     return arrString
 
-for i_episode in range(10):
-    observation = env.reset()
+rewards = []
 
+for i_episode in range(500):
+
+    observation = env.reset()
     observations = []
     actions = []
+
+    iteration_reward = 0
     
     t = 0
 
-    for t in range(3000):
+    while True:
         
         env.render()
 
@@ -45,7 +50,11 @@ for i_episode in range(10):
         actions.append(action)
 
         observation, reward, done, info = env.step(action)
-        
+
+        iteration_reward += reward
+
+        t += 1
+            
         if done and record:
             print("Episode finished after {} timesteps".format(t+1))
             if t+1 > 1000:
@@ -58,6 +67,14 @@ for i_episode in range(10):
                 for action in actions:
                     actionData.write(str(action) + ' ')
             break
+
+        if done:
+            break
+
+    rewards.append(iteration_reward)
+
+print(rewards)
+print(sum(rewards) / len(rewards))
         
 env.close()
     

@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-from nets import FC364
+from nets import FC364, Test
 
 class SupervisedAgent():
 
@@ -18,6 +18,8 @@ class SupervisedAgent():
         if saveFile == '':
             if network == 'fc364':
                 self.saveFile = '../res/models/fc364_visualisation.pth'
+            if network == 'test':
+                self.saveFile = '../res/models/test.pth'
         else:
             self.saveFile = '../res/models/' + network + '_' + saveFile + '.pth'
 
@@ -26,6 +28,11 @@ class SupervisedAgent():
 
         if network.lower() == 'fc364':
             self.net = FC364()
+            self.net = self.net.float()
+            if self.load:
+                self.net.load_state_dict(torch.load(self.saveFile))
+        elif network.lower() == 'test':
+            self.net = Test()
             self.net = self.net.float()
             if self.load:
                 self.net.load_state_dict(torch.load(self.saveFile))
