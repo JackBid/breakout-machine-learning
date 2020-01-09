@@ -1,4 +1,5 @@
 /.vscode/*
 __pycache__
-*.txt
+action.txt
+ram.txt
 .vs
