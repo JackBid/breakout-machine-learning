@@ -9,8 +9,6 @@ class FC364(nn.Module):
     def __init__(self):
         super(FC364, self).__init__()
         self.fc1 = nn.Linear(3, 6) 
-
-
         self.fc2 = nn.Linear(6, 4)
 
     def forward(self, x):

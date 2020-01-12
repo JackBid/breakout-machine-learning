@@ -31,7 +31,7 @@ class Simulation():
             arrString += str(val) + ' '
         return arrString
 
-        
+    # Run the simulation
     def run(self, iterations):
 
         rewards = []
@@ -96,6 +96,9 @@ class Simulation():
         print('Average reward achievied in ' + str(iterations) + ' iterations: ' + str(averageReward))
 
         self.env.close()
+
+agent = SupervisedAgent('fc364', True, True)
+agent.train(1)
 
 sim = Simulation('supervised', False)
 sim.run(10)
