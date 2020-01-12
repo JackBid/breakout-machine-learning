@@ -5,76 +5,97 @@ import gym
 import time
 import os
 
+class Simulation():
 
-env = gym.make('Breakout-ram-v0')
-env.frameskip = 1
+    def __init__(self, agent='supervised', record=False):
 
-agent = TrivialAgent()
-#agent = SupervisedAgent('fc364', True)
-#agent.train(1)
-trivial = True
-record = False
+        # Create a gym environment (game environment)
+        self.env = gym.make('Breakout-ram-v0')
+        self.env.frameskip = 0
 
-def arrToString(arr):
-    arrString = ''
-    for val in arr:
-        arrString += str(val) + ' '
-    return arrString
-
-rewards = []
-
-for i_episode in range(500):
-
-    observation = env.reset()
-    observations = []
-    actions = []
-
-    iteration_reward = 0
-    
-    t = 0
-
-    while True:
-        
-        env.render()
-
-        observations.append(observation)
-        ballY = int(observation[101])
-        
-        if t == 0 or ballY > 200 or ballY == 0:
-          action = config.ACTION_FIRE
-        elif trivial:
-            action = agent.action(observation, t, config.TRIVIAL_THRESHOLD)
+        # Create an agent for the simulation
+        if agent == 'supervised':
+            self.agent = SupervisedAgent('fc364', True)
         else:
-            action = agent.action(observation)
+            self.agent = TrivialAgent()
 
-        actions.append(action)
+        # Initialise other variables
+        self.record = record
+        self.agentType = type(agent).__name__
 
-        observation, reward, done, info = env.step(action)
-
-        iteration_reward += reward
-
-        t += 1
-            
-        if done and record:
-            print("Episode finished after {} timesteps".format(t+1))
-            if t+1 > 1000:
-                ramData = open("../res/training data/ram.txt","a")
-                actionData = open("../res/training data/action.txt", "a")
-                
-                for observation in observations:
-                    ramData.write(arrToString(observation) + '\n')
-
-                for action in actions:
-                    actionData.write(str(action) + ' ')
-            break
-
-        if done:
-            break
-
-    rewards.append(iteration_reward)
-
-print(rewards)
-print(sum(rewards) / len(rewards))
-        
-env.close()
     
+    # Convert an array to string
+    def arrToString(self, arr):
+        arrString = ''
+        for val in arr:
+            arrString += str(val) + ' '
+        return arrString
+
+        
+    def run(self, iterations):
+
+        rewards = []
+
+        # How many iterations of the game should be played
+        for i_episode in range(iterations):
+
+            observation = self.env.reset()
+
+            # Every observation and action is stored and then saved to a text file if record is set to true
+            observations = []
+            actions = []
+
+            iteration_reward = 0
+            t = 0
+
+            # One game iteration
+            while True:
+                
+                self.env.render()
+
+                observations.append(observation)
+
+                ballY = int(observation[101])
+                
+                # If the ball is off screen or the game is at the start, fire
+                # Otherwise use the agent to decide action
+                if t == 0 or ballY > 200 or ballY == 0:
+                    action = config.ACTION_FIRE
+                elif self.agentType == 'TrivialAgent':
+                    action = self.agent.action(observation, t, config.TRIVIAL_THRESHOLD)
+                else:
+                    action = self.agent.action(observation)
+
+                actions.append(action)
+
+                observation, reward, done, info = self.env.step(action)
+
+                iteration_reward += reward
+                t += 1
+                
+                # If the game is finished and record is set to true,
+                # Save the observation and action arrays into a text file
+                if done and self.record:
+                    print("Episode finished after {} timesteps".format(t+1))
+                    ramData = open("../res/training data/ram.txt","a")
+                    actionData = open("../res/training data/action.txt", "a")
+                    
+                    for observation in observations:
+                        ramData.write(self.arrToString(observation) + '\n')
+
+                    for action in actions:
+                        actionData.write(str(action) + ' ')
+                    break
+
+                if done:
+                    break
+
+            rewards.append(iteration_reward)
+        
+        averageReward = sum(rewards) / len(rewards)
+        print('Average reward achievied in ' + str(iterations) + ' iterations: ' + str(averageReward))
+
+        self.env.close()
+
+sim = Simulation('supervised', False)
+sim.run(10)
