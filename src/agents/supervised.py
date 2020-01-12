@@ -43,6 +43,20 @@ class SupervisedAgent():
         self.criterion = nn.CrossEntropyLoss()
         self.optimizer = optim.Adam(self.net.parameters())
 
+    def normalise(self, tensor):
+
+        tensorSum = int(tensor.sum())
+        return tensor / tensorSum
+
+    def customLoss(self, outputs, target):
+        target_tensor = torch.zeros(4)
+        target_tensor[target] = 1
+        outputs = self.normalise(F.softmax(outputs, dim=0))
+
+        loss = torch.mean((outputs - target)**2)
+
+        return loss
+
     def loadTrainingData(self, path):
         training = []
 
@@ -82,11 +96,14 @@ class SupervisedAgent():
 
                 target = self.testingData[i].clone()
 
+                self.customLoss(outputs, target)
+
                 #outputs = F.softmax(outputs, dim=0)
                 outputs = outputs.unsqueeze(dim=0)
 
                 loss = self.criterion(outputs, target)
                 #print('loss: ' + str(loss))
+                #loss = self.customLoss(outputs,target)
                 loss.backward()
                 self.optimizer.step()
 
@@ -111,8 +128,4 @@ class SupervisedAgent():
 
         maxVal = torch.max(outputs, 0)
         return int(maxVal[1])
-
-
-
-
 

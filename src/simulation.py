@@ -97,8 +97,8 @@ class Simulation():
 
         self.env.close()
 
-agent = SupervisedAgent('fc364', True, True)
-agent.train(1)
+agent = SupervisedAgent('fc364', False, False)
+agent.train(5)
 
 sim = Simulation('supervised', False)
 sim.run(10)
