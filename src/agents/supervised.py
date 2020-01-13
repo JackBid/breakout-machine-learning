@@ -20,6 +20,8 @@ class SupervisedAgent():
                 self.saveFile = '../res/models/fc364_visualisation.pth'
             if network == 'test':
                 self.saveFile = '../res/models/test.pth'
+            if network == 'cem':
+                self.saveFile = '../res/models/cem.pth'
         else:
             self.saveFile = '../res/models/' + network + '_' + saveFile + '.pth'
 
@@ -33,6 +35,11 @@ class SupervisedAgent():
                 self.net.load_state_dict(torch.load(self.saveFile))
         elif network.lower() == 'test':
             self.net = Test()
+            self.net = self.net.float()
+            if self.load:
+                self.net.load_state_dict(torch.load(self.saveFile))
+        elif network.lower() == 'cem':
+            self.net = FC364()
             self.net = self.net.float()
             if self.load:
                 self.net.load_state_dict(torch.load(self.saveFile))
