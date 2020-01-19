@@ -103,8 +103,6 @@ class SupervisedAgent():
 
                 target = self.testingData[i].clone()
 
-                self.customLoss(outputs, target)
-
                 #outputs = F.softmax(outputs, dim=0)
                 outputs = outputs.unsqueeze(dim=0)
 

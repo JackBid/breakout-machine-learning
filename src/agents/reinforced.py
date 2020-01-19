@@ -1,26 +1,60 @@
 import numpy as np
-import torch
 import gym
+import torch
 import math
-import config
+from torch.autograd import Variable
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
 from nets import FC364, Test
 
-class ReinforcedAgent():
+class BasicReinforcedAgent():
 
     def __init__(self):
         super().__init__()
 
         self.net = FC364()
-        self.net = self.net.float()
+        self.net.float()
+
+        self.net.load_state_dict(torch.load('../res/models/game_based.pth'))
 
         # Create a gym environment (game environment)
         self.env = gym.make('Breakout-ram-v0')
         self.env.frameskip = 0
+
+        self.optimizer = optim.Adam(self.net.parameters())
+
+    # Based on where the ball landed in relation to the paddle, find the target
+    def getTarget(self, paddleMid, ballMid):
+        arr = []
+
+        # If the ball middle and paddle middle are aligned, remain in the same place
+        if abs(paddleMid - ballMid) < 2:
+            arr = [1.0, 0.0, 0.0, 0.0]
+        # paddle left of ball so move right
+        if paddleMid < ballMid:
+            arr = [0.0, 0.0, 1.0, 0.0]
+        # paddle right of ball so move left
+        elif paddleMid > ballMid:
+            arr = [0.0, 0.0, 0.0, 1.0]
+            
+        return torch.tensor(arr)
+
+    # Get the output from the network from a particular observation
+    def getOutput(self, observation):
+        observationTensor = torch.tensor(observation)
+
+        paddleMid = int(observation[72]) + 13
+        ballMid = int(observation[99]) + 1
+        ballY = int(observation[101])
+
+        tensorInput = torch.tensor([ballMid, ballY, paddleMid])
+        outputs = self.net(tensorInput.float())
+
+        return outputs
     
+    # Get the action the network takes based on an observation
     def action(self, observation):
         observationTensor = torch.tensor(observation)
 
@@ -33,36 +67,64 @@ class ReinforcedAgent():
 
         maxVal = torch.max(outputs, 0)
         return int(maxVal[1])
-
-    def evaluate(self, fc1_weight, fc2_weight, gamma=1.0):
-        fc1_weight = fc1_weight.type(torch.FloatTensor)
-        fc2_weight = fc2_weight.type(torch.FloatTensor)
-
-        #Set weights
-        self.net.fc1.weight = torch.nn.Parameter(fc1_weight)
-        self.net.fc2.weight = torch.nn.Parameter(fc2_weight)
-
-        episode_return = 0.0
-        observation = self.env.reset()
-        t = 0
-
-        while True:
-            
-            ballY = int(observation[101])
-                
-            # If the ball is off screen or the game is at the start, fire
-            # Otherwise use the agent to decide action
-            if t == 0 or ballY > 200 or ballY == 0:
-                action = config.ACTION_FIRE
-            else:
-                action = self.action(observation)
-
-            observation, reward, done, _ = self.env.step(action)
-            episode_return += reward #* math.pow(gamma, t)
-
-            if done:
-                break
-
-            t += 1
-        return episode_return
     
+    def train(self, iterations):
+
+        maxReward = 0
+        total = 0
+
+        # How many iterations of the game should be played
+        for i_episode in range(iterations):
+
+            observation = self.env.reset()
+
+            iteration_reward = 0
+            t = 0
+
+            # One game iteration
+            while True:
+                
+                #self.env.render()
+
+                paddleMid = int(observation[72]) + 13
+                ballMid = int(observation[99]) + 1
+                ballY = int(observation[101])
+                
+                # If the ball is off screen or the game is at the start, fire
+                # Otherwise use the agent to decide action
+                if t == 0 or ballY > 200 or ballY <= 0:
+                    action = 1#config.ACTION_FIRE
+                else:
+                    action = self.action(observation)
+
+                observation, reward, done, info = self.env.step(action)
+
+                if ballY <= 5: 
+        
+                    self.optimizer.zero_grad()
+                    
+                    output = self.getOutput(observation)
+                    target = self.getTarget(paddleMid, ballMid)
+
+                    criterion = nn.MSELoss()
+                    loss = criterion(output, target)
+
+                    loss.backward()
+                    self.optimizer.step()
+
+                iteration_reward += reward
+                t += 1
+
+                if done:
+                    break
+            
+            total += iteration_reward
+            if iteration_reward > maxReward:
+                maxReward = iteration_reward
+
+        print('average reward: ' + str(total / iterations))
+        print('max reward: ' + str(maxReward))
+            
+        torch.save(self.net.state_dict(), '../res/models/game_based.pth')
+
+

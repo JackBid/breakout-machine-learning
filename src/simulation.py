@@ -1,6 +1,6 @@
 from agents.trivial import TrivialAgent
 from agents.supervised import SupervisedAgent
-from agents.reinforced import ReinforcedAgent
+from agents.reinforced import BasicReinforcedAgent
 import numpy as np
 import torch
 import config
@@ -108,7 +108,13 @@ class Simulation():
         
         return signal
     
-    def cem(self, n_iterations=500, gamma=1.0, print_every=10, pop_size=50, elite_frac=0.2, sigma=0.05):
+    def meanWeight(weights):
+        print(weights[0].shape)
+        #for weight in weights:
+
+
+    
+    def cem(self, n_iterations=500, gamma=1.0, print_every=10, pop_size=10, elite_frac=0.2, sigma=0.05):
         """PyTorch implementation of the cross-entropy method.
         
         Params
@@ -152,24 +158,15 @@ class Simulation():
             if reward > maxReward:
                 torch.save(rAgent.net.state_dict(), '../res/models/cem.pth')
 
-sim = Simulation('cem', False)
-sim.run(10)
 
+#agent = SupervisedAgent('fc364', True, False)
+#sim = Simulation('supervised', False)
+#sim.run(5)
+#sim.cem(20)
 
-'''
-agent = SupervisedAgent('fc364', True, False)
-sim = Simulation('supervised', False)
-sim.cem(5)
+#sim = Simulation('cem', False)
+#sim.run(10)
 
+r = BasicReinforcedAgent()
+r.train(1000)
 
-with torch.no_grad():
-    fc1_weight = agent.net.fc1.weight
-    fc2_weight = agent.net.fc2.weight
-
-agent.getWeightsWithNoise(fc1_weight, 0.05)
-
-ragent = ReinforcedAgent()
-print(ragent.evaluate(fc1_weight, fc2_weight))
-
-sim = Simulation('supervised', False)
-sim.run(10)'''
