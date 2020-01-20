@@ -15,14 +15,20 @@ class BasicReinforcedAgent():
 
     def __init__(self):
         super().__init__()
-        
-        self.cuda = torch.device('cuda')
 
         self.net = FC364()
         self.net.float()
-        self.net.cuda()
 
-        self.net.load_state_dict(torch.load('../res/models/game_based_adjusted.pth'))
+        if torch.cuda.is_available():
+            self.device = torch.device('cuda')
+            self.net.cuda()
+            self.net.load_state_dict(torch.load('../res/models/game_based_adjusted.pth'))
+        else:
+            #torch.load(map_location=torch.device('cpu'))
+            self.device = torch.device('cpu')
+            self.net.load_state_dict(torch.load('../res/models/game_based_adjusted.pth', map_location=('cpu')))
+
+        
 
         # Create a gym environment (game environment)
         self.env = gym.make('Breakout-ram-v0')
@@ -46,30 +52,30 @@ class BasicReinforcedAgent():
         elif paddleMid > ballMid:
             arr = [0.0, 0.0, 0.0, 1.0]
             
-        return torch.tensor(arr, device=self.cuda)
+        return torch.tensor(arr, device=self.device)
 
     # Get the output from the network from a particular observation
     def getOutput(self, observation):
-        observationTensor = torch.tensor(observation, device=self.cuda)
+        observationTensor = torch.tensor(observation, device=self.device)
 
         paddleMid = int(observation[72]) + 8
         ballMid = int(observation[99]) + 1
         ballY = int(observation[101])
 
-        tensorInput = torch.tensor([ballMid, ballY, paddleMid], device=self.cuda)
+        tensorInput = torch.tensor([ballMid, ballY, paddleMid], device=self.device)
         outputs = self.net(tensorInput.float())
 
         return outputs
     
     # Get the action the network takes based on an observation
     def action(self, observation):
-        observationTensor = torch.tensor(observation, device=self.cuda)
+        observationTensor = torch.tensor(observation, device=self.device)
 
         paddleMid = int(observation[72]) + 8
         ballMid = int(observation[99]) + 1
         ballY = int(observation[101])
 
-        tensorInput = torch.tensor([ballMid, ballY, paddleMid], device=self.cuda)
+        tensorInput = torch.tensor([ballMid, ballY, paddleMid], device=self.device)
         outputs = self.net(tensorInput.float())
 
         maxVal = torch.max(outputs, 0)
