@@ -127,7 +127,7 @@ class BasicReinforcedAgent():
             if i_episode != 0 and i_episode % 1000 == 0:
                 
                 # Calcuate how long this training took
-                elapsed_time = time.time()
+                elapsed_time = time.time() - startTime
                 minutes = math.floor(elapsed_time/60)
                 seconds = math.floor(elapsed_time - minutes * 60)
 
@@ -145,5 +145,7 @@ class BasicReinforcedAgent():
 
                 maxReward = 0
                 total = 0
+
+                startTime = time.time()
 
 
