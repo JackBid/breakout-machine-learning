@@ -168,5 +168,5 @@ class Simulation():
 #sim.run(10)
 
 r = BasicReinforcedAgent()
-r.train(1000)
+r.train(5001)
 

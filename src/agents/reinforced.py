@@ -2,6 +2,7 @@ import numpy as np
 import gym
 import torch
 import math
+import time
 from torch.autograd import Variable
 import torch.nn as nn
 import torch.nn.functional as F
@@ -72,6 +73,7 @@ class BasicReinforcedAgent():
 
         maxReward = 0
         total = 0
+        startTime = time.time()
 
         # How many iterations of the game should be played
         for i_episode in range(iterations):
@@ -122,9 +124,26 @@ class BasicReinforcedAgent():
             if iteration_reward > maxReward:
                 maxReward = iteration_reward
 
-        print('average reward: ' + str(total / iterations))
-        print('max reward: ' + str(maxReward))
-            
-        torch.save(self.net.state_dict(), '../res/models/game_based.pth')
+            if i_episode != 0 and i_episode % 1000 == 0:
+                
+                # Calcuate how long this training took
+                elapsed_time = time.time()
+                minutes = math.floor(elapsed_time/60)
+                seconds = math.floor(elapsed_time - minutes * 60)
+
+                average_reward = total / 1000
+                
+                print('average reward: ' + str(average_reward))
+                print('max reward: ' + str(maxReward))
+                print('Training took: ' + str(minutes) + ':' + str(seconds))
+                print()
+
+                file = open('../res/learning_progress.txt', 'a+')
+                file.write(str(average_reward) + ' ' + str(maxReward) + '\n')
+                
+                torch.save(self.net.state_dict(), '../res/models/game_based.pth')
+
+                maxReward = 0
+                total = 0
 
 
