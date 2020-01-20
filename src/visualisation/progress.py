@@ -40,4 +40,4 @@ readData('../../res/learning_progress.txt')
 
 plotSingleGraph(averageScores, 'Average Score')
 plotSingleGraph(maxScores, 'Max Score')
-#plotBothOnGraph(averageScores, maxScores, 'average score', 'thousands of games')
+plotBothOnGraph(averageScores, maxScores, 'average score', 'thousands of games')

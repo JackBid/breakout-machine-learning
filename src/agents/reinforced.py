@@ -3,6 +3,7 @@ import gym
 import torch
 import math
 import time
+import random
 from torch.autograd import Variable
 import torch.nn as nn
 import torch.nn.functional as F
@@ -23,6 +24,8 @@ class BasicReinforcedAgent():
         # Create a gym environment (game environment)
         self.env = gym.make('Breakout-ram-v0')
         self.env.frameskip = 0
+        
+        self.explorationRate = 0.05
 
         self.optimizer = optim.Adam(self.net.parameters())
 
@@ -94,7 +97,9 @@ class BasicReinforcedAgent():
                 
                 # If the ball is off screen or the game is at the start, fire
                 # Otherwise use the agent to decide action
-                if t == 0 or ballY > 200 or ballY <= 0:
+                if random.random() < self.explorationRate:
+                    action = random.randint(0, 3)
+                elif t == 0 or ballY > 200 or ballY <= 0:
                     action = 1#config.ACTION_FIRE
                 else:
                     action = self.action(observation)
