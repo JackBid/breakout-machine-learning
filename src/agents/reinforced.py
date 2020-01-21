@@ -28,7 +28,7 @@ class BasicReinforcedAgent():
             self.device = torch.device('cpu')
             self.net.load_state_dict(torch.load('../res/models/game_based_adjusted.pth', map_location=('cpu')))
 
-        
+        print('device: ' + str(self.device) + '\n')    
 
         # Create a gym environment (game environment)
         self.env = gym.make('Breakout-ram-v0')
@@ -43,7 +43,7 @@ class BasicReinforcedAgent():
         arr = []
 
         # If the ball hits the paddle, remain in the same place
-        if abs(paddleMid - ballMid) < 8:
+        if abs(paddleMid - ballMid) < 7:
             arr = [1.0, 0.0, 0.0, 0.0]
         # paddle left of ball so move right
         if paddleMid < ballMid:
