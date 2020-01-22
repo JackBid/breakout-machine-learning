@@ -7,6 +7,13 @@ import config
 import gym
 import time
 import os
+import sys
+
+# Global variable for command line arguments
+if len(sys.argv) == 1:
+    trainingLength = 5001
+else:
+    trainingLength = int(sys.argv[1])
 
 class Simulation():
 
@@ -168,5 +175,5 @@ class Simulation():
 #sim.run(10)
 
 r = BasicReinforcedAgent()
-r.train(5001)
+r.train(trainingLength)
 
