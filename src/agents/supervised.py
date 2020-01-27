@@ -4,11 +4,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-from nets import FC364, Test
+from nets import FullyConnected, Test
 
 class SupervisedAgent():
 
-    def __init__(self, network='fc364', load=True, save=True, saveFile=''):
+    def __init__(self, network='fullyConnected', load=True, save=True, saveFile=''):
 
         # Start by processing the arguments in order to initiate the network correctly.
         # This allows users to choose what network/model should be used,
@@ -16,7 +16,7 @@ class SupervisedAgent():
 
         # If no save file is provided then use a default file depending on the network type specified
         if saveFile == '':
-            if network == 'fc364':
+            if network == 'fullyConnected':
                 self.saveFile = '../res/models/fc364_visualisation.pth'
             if network == 'test':
                 self.saveFile = '../res/models/test.pth'
@@ -28,8 +28,8 @@ class SupervisedAgent():
         self.load = load
         self.save = save
 
-        if network.lower() == 'fc364':
-            self.net = FC364()
+        if network.lower() == 'fullyconnected':
+            self.net = FullyConnected(3, 6)
             self.net = self.net.float()
             if self.load:
                 self.net.load_state_dict(torch.load(self.saveFile))
@@ -39,7 +39,7 @@ class SupervisedAgent():
             if self.load:
                 self.net.load_state_dict(torch.load(self.saveFile))
         elif network.lower() == 'cem':
-            self.net = FC364()
+            self.net = FullyConnected(3, 6)
             self.net = self.net.float()
             if self.load:
                 self.net.load_state_dict(torch.load(self.saveFile))

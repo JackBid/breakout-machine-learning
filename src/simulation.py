@@ -1,6 +1,6 @@
 from agents.trivial import TrivialAgent
 from agents.supervised import SupervisedAgent
-from agents.reinforced import BasicReinforcedAgent
+from agents.reinforced import BasicReinforcedAgent, CombinedReinforcedAgent
 import numpy as np
 import torch
 import config
@@ -25,7 +25,7 @@ class Simulation():
 
         # Create an agent for the simulation
         if agent == 'supervised':
-            self.agent = SupervisedAgent('fc364', True)
+            self.agent = SupervisedAgent('fullyConnected', True)
         elif agent == 'cem':
             self.agent = SupervisedAgent('cem', True, False)
         else:
@@ -33,7 +33,7 @@ class Simulation():
 
         # Initialise other variables
         self.record = record
-        self.agentType = type(agent).__name__
+        self.agentType = type(self.agent).__name__
 
     
     # Convert an array to string
@@ -119,8 +119,6 @@ class Simulation():
         print(weights[0].shape)
         #for weight in weights:
 
-
-    
     def cem(self, n_iterations=500, gamma=1.0, print_every=10, pop_size=10, elite_frac=0.2, sigma=0.05):
         """PyTorch implementation of the cross-entropy method.
         
@@ -168,12 +166,16 @@ class Simulation():
 
 #agent = SupervisedAgent('fc364', True, False)
 #sim = Simulation('supervised', False)
-#sim.run(5)
+#sim.run(10)
 #sim.cem(20)
 
 #sim = Simulation('cem', False)
 #sim.run(10)
 
+
 r = BasicReinforcedAgent()
 r.train(trainingLength)
+
+#r2 = CombinedReinforcedAgent()
+#r2.train(100)
 

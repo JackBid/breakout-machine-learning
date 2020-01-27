@@ -4,12 +4,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-class FC364(nn.Module):
+class FullyConnected(nn.Module):
 
-    def __init__(self):
-        super(FC364, self).__init__()
-        self.fc1 = nn.Linear(3, 6) 
-        self.fc2 = nn.Linear(6, 4)
+    def __init__(self, inputLayer=3, hiddenLayer=4):
+        super(FullyConnected, self).__init__()
+        self.fc1 = nn.Linear(inputLayer, hiddenLayer) 
+        self.fc2 = nn.Linear(hiddenLayer, 4)
 
     def forward(self, x):
 
@@ -17,7 +17,6 @@ class FC364(nn.Module):
         x = self.fc2(x)
         
         return x
-
 
 class Test(nn.Module):
 
@@ -34,3 +33,4 @@ class Test(nn.Module):
         x = self.fc3(x)
         
         return x
+
