@@ -36,7 +36,7 @@ def plotBothOnGraph(averageScores, maxScores, yLabel, xLabel):
     fig.tight_layout()  # otherwise the right y-label is slightly clipped
     plt.show()
         
-readData('../../res/learning_progress.txt')
+readData('../../res/learning_progress2.txt')
 
 plotSingleGraph(averageScores, 'Average Score')
 plotSingleGraph(maxScores, 'Max Score')

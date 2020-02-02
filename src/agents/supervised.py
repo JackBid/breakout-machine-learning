@@ -30,19 +30,15 @@ class SupervisedAgent():
 
         if network.lower() == 'fullyconnected':
             self.net = FullyConnected(3, 6)
-            self.net = self.net.float()
-            if self.load:
-                self.net.load_state_dict(torch.load(self.saveFile))
         elif network.lower() == 'test':
             self.net = Test()
-            self.net = self.net.float()
-            if self.load:
-                self.net.load_state_dict(torch.load(self.saveFile))
         elif network.lower() == 'cem':
             self.net = FullyConnected(3, 6)
-            self.net = self.net.float()
-            if self.load:
-                self.net.load_state_dict(torch.load(self.saveFile))
+        
+        self.net = self.net.float()
+        if self.load:
+            self.net.load_state_dict(torch.load(self.saveFile))
+
 
         self.trainingData = self.loadTrainingData('../res/training data/ram.txt')
         self.testingData = self.loadTestingData('../res/training data/action.txt')
