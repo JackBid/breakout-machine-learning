@@ -174,5 +174,5 @@ class Simulation():
 #sim.run(10)
 
 r2 = CombinedReinforcedAgent(True)
-r2.supervisedLearn(10)
+r2.supervisedLearn(trainingLength)
 
