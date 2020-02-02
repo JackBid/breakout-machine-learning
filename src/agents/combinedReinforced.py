@@ -25,10 +25,10 @@ class CombinedReinforcedAgent():
         if torch.cuda.is_available():
             self.device = torch.device('cuda')
             self.net.cuda()
-            #self.net.load_state_dict(torch.load('../res/models/game_based_adjusted.pth'))
+            self.net.load_state_dict(torch.load('../res/models/combined.pth'))
         else:
             self.device = torch.device('cpu')
-            #self.net.load_state_dict(torch.load('../res/models/game_based_adjusted.pth', map_location=('cpu')))
+            self.net.load_state_dict(torch.load('../res/models/combined.pth', map_location=('cpu')))
 
         print('device: ' + str(self.device) + '\n')    
 
@@ -40,7 +40,7 @@ class CombinedReinforcedAgent():
         self.testingData = self.loadTestingData('../res/training data/action.txt')
 
         self.criterion = nn.CrossEntropyLoss()
-        self.optimizer = optim.Adam(self.net.parameters())
+        self.optimizer = optim.Adam(self.net.parameters(), lr=0.01)
 
         # Create supervised agent
         self.supervisedAgent = SupervisedAgent()
@@ -110,6 +110,7 @@ class CombinedReinforcedAgent():
                 target = self.testingData[i].clone()
 
                 outputs = outputs.unsqueeze(dim=0)
+                #print(outputs)
 
                 loss = self.criterion(outputs, target)
                 #print('loss: ' + str(loss))
