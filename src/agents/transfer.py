@@ -10,9 +10,9 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 from agents.supervised import SupervisedAgent
-from nets import FullyConnected, Test
+from nets import DeepFullyConnected, FullyConnected, Test
 
-class CombinedReinforcedAgent():
+class TransferAgent():
 
     def __init__(self, save=False):
         super().__init__()
@@ -25,10 +25,10 @@ class CombinedReinforcedAgent():
         if torch.cuda.is_available():
             self.device = torch.device('cuda')
             self.net.cuda()
-            self.net.load_state_dict(torch.load('../res/models/combined.pth'))
+            self.net.load_state_dict(torch.load('../res/models/transfer.pth'))
         else:
             self.device = torch.device('cpu')
-            self.net.load_state_dict(torch.load('../res/models/combined.pth', map_location=('cpu')))
+            self.net.load_state_dict(torch.load('../res/models/transfer.pth', map_location=('cpu')))
 
         print('device: ' + str(self.device) + '\n')    
 
@@ -40,7 +40,7 @@ class CombinedReinforcedAgent():
         self.testingData = self.loadTestingData('../res/training data/action.txt')
 
         self.criterion = nn.CrossEntropyLoss()
-        self.optimizer = optim.Adam(self.net.parameters(), lr=0.01)
+        self.optimizer = optim.Adam(self.net.parameters())
 
         # Create supervised agent
         self.supervisedAgent = SupervisedAgent()
@@ -67,19 +67,32 @@ class CombinedReinforcedAgent():
         
         return testing
     
+    # Get the action from a trained supervised agent
     def getSupervisedAgentAction(self, observation):
         action = self.supervisedAgent.action(observation)
         return action
     
+    # Get the output of the network
     def getOutput(self, tensorIn):
         output = self.net(tensorIn)
         return output
 
+    # Get the action the network takes
     def action(self, tensorIn):
         output = self.net(tensorIn)
 
         maxVal = torch.max(output, 0)
         return int(maxVal[1])
+
+    # Scale RAM values (tensor) to be between 0-1
+    def scaleRAM(self, RAM):
+
+        scaled_RAM = []
+
+        for value in RAM:
+            scaled_RAM.append(value.item() / 255)
+
+        return torch.tensor(scaled_RAM)
 
     # Based on where the ball landed in relation to the paddle, find the target
     def getTarget(self, paddleMid, ballMid):
@@ -104,27 +117,34 @@ class CombinedReinforcedAgent():
             for i in range(0, len(self.trainingData)):
                 # zero the parameter gradients
                 self.optimizer.zero_grad()
-                
+
+                # Scale the RAM values to be between 0-1
+                scaled_RAM = self.scaleRAM(self.trainingData[i])
+
                 # Get the outputs and target
-                outputs = self.net(self.trainingData[i].float())
+                outputs = self.net(scaled_RAM)
                 target = self.testingData[i].clone()
 
+                # Unsqueeze outputs for loss function
                 outputs = outputs.unsqueeze(dim=0)
-                #print(outputs)
 
                 loss = self.criterion(outputs, target)
-                #print('loss: ' + str(loss))
                 loss.backward()
                 self.optimizer.step()
 
                 running_loss += loss.item()
-                if i % 2000 == 1999:    # print every 2000 mini-batches
+
+                # Every 2000 mini-batches print the loss and save the model
+                if i % 2000 == 1999:
                     print('[%d, %5d] loss: %.3f' %
                     (iteration + 1, i + 1, running_loss / 2000))
                     running_loss = 0.0
 
+                    file = open('../res/transferProgress.txt', 'a+')
+                    file.write(str(running_loss) + '\n')
+    
                     if self.save:
-                        torch.save(self.net.state_dict(), '../res/models/combined.pth')
+                        torch.save(self.net.state_dict(), '../res/models/transfer.pth')
 
     def selfLearn(self, iterations):
 
