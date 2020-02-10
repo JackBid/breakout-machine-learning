@@ -138,11 +138,13 @@ class TransferAgent():
                 if i % 2000 == 1999:
                     print('[%d, %5d] loss: %.3f' %
                     (iteration + 1, i + 1, running_loss / 2000))
+                    
+                    file = open('../res/transferProgress.txt', 'a+')
+                    file.write('[%d, %5d] loss: %.3f' %
+                    (iteration + 1, i + 1, running_loss / 2000) + '\n')
+    
                     running_loss = 0.0
 
-                    file = open('../res/transferProgress.txt', 'a+')
-                    file.write(str(running_loss) + '\n')
-    
                     if self.save:
                         torch.save(self.net.state_dict(), '../res/models/transfer.pth')
 
