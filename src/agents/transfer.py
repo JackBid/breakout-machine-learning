@@ -92,7 +92,20 @@ class TransferAgent():
         for value in RAM:
             scaled_RAM.append(value.item() / 255)
 
-        return torch.tensor(scaled_RAM)
+        return torch.tensor(scaled_RAM).to(self.device)
+
+    # Transfor tensor to have values [0,1]
+    def normaliseTensor(self, tensor):
+        minValue = torch.min(tensor)
+        print('min: ' + str(minValue))
+        maxValue = torch.max(tensor)
+        print('max: ' + str(maxValue))
+        normalised = []
+
+        for value in tensor:
+            normalised.append((value.item() - minValue) / (maxValue - minValue))
+        
+        return torch.tensor(normalised)
 
     # Based on where the ball landed in relation to the paddle, find the target
     def getTarget(self, paddleMid, ballMid):
@@ -165,20 +178,19 @@ class TransferAgent():
             # One game iteration
             while True:
 
-                self.env.render()
+                #self.env.render()
 
                 paddleMid = int(observation[72]) + 8
                 ballMid = int(observation[99]) + 1
                 ballY = int(observation[101])
                 
-                # Create tensor for observation
-                supervisedAgentAction = float(self.getSupervisedAgentAction(observation))
-                tensorIn = torch.from_numpy(np.append(observation, supervisedAgentAction)).float().to(self.device)
+                # Get scaled ram tensor for input to network
+                scaled_RAM = self.scaleRAM(observation)
                 
                 if t == 0 or ballY > 200 or ballY <= 0:
                     action = 1#config.ACTION_FIRE
                 else:
-                    action = self.action(tensorIn)
+                    action = self.action(scaled_RAM)
 
                 observation, reward, done, info = self.env.step(action)
 
@@ -186,7 +198,8 @@ class TransferAgent():
         
                     self.optimizer.zero_grad()
                     
-                    output = self.getOutput(tensorIn)
+                    output = self.getOutput(scaled_RAM)
+                    output = F.softmax(output, dim=0)
                     target = self.getTarget(paddleMid, ballMid)
 
                     criterion = nn.MSELoss()
@@ -199,4 +212,14 @@ class TransferAgent():
                 t += 1
 
                 if done:
+                    
+                    print(iteration_reward)
+
+                    file = open('../res/transferProgressSelfLearn.txt', 'a+')
+                    file.write(str(iteration_reward) + '\n')
+    
+                    if self.save:
+                        torch.save(self.net.state_dict(), '../res/models/transferSelfLearn.pth')
+
                     break
+                    

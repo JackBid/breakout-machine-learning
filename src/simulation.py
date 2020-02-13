@@ -174,5 +174,5 @@ class Simulation():
 #sim.run(10)
 
 transferAgent = TransferAgent(True)
-transferAgent.supervisedLearn(trainingLength)
+transferAgent.selfLearn(trainingLength)
 
