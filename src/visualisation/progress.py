@@ -4,7 +4,14 @@ import matplotlib.pyplot as plt
 averageScores = []
 maxScores = []
 
-def readData(path):
+def readDataScores(path):
+    file = open(path, 'r+')
+    lines = file.readlines()
+
+    for line in lines:
+        averageScores.append(float(line))
+
+def readDataMaxAndAverage(path):
     file = open(path, 'r+')
     lines = file.readlines()
     
@@ -36,8 +43,8 @@ def plotBothOnGraph(averageScores, maxScores, yLabel, xLabel):
     fig.tight_layout()  # otherwise the right y-label is slightly clipped
     plt.show()
         
-readData('../../res/learning_progress2.txt')
+readDataScores('../../res/transferProgressSelfLearn.txt')
 
 plotSingleGraph(averageScores, 'Average Score')
-plotSingleGraph(maxScores, 'Max Score')
-plotBothOnGraph(averageScores, maxScores, 'average score', 'thousands of games')
+#plotSingleGraph(maxScores, 'Max Score')
+#plotBothOnGraph(averageScores, maxScores, 'average score', 'thousands of games')
