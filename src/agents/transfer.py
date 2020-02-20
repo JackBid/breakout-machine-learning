@@ -112,7 +112,7 @@ class TransferAgent():
         arr = []
 
         # If the ball hits the paddle, remain in the same place
-        if abs(paddleMid - ballMid) < 9:
+        if abs(paddleMid - ballMid) < 7:
             arr = [1.0, 0.0, 0.0, 0.0]
         # paddle left of ball so move right
         if paddleMid < ballMid:

@@ -30,7 +30,7 @@ def plotBothOnGraph(averageScores, maxScores, yLabel, xLabel):
     fig, ax1 = plt.subplots()
 
     color = 'tab:blue'
-    ax1.set_xlabel('Thousands of games played', color=color)
+    ax1.set_xlabel('Games Played', color=color)
     ax1.set_ylabel('Average score', color=color)
     ax1.plot(averageScores, color=color)
 
