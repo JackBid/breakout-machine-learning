@@ -64,7 +64,7 @@ class Simulation():
             # One game iteration
             while True:
                 
-                self.env.render()
+                #self.env.render()
 
                 observations.append(observation)
 
@@ -88,10 +88,12 @@ class Simulation():
                 
                 # If the game is finished and record is set to true,
                 # Save the observation and action arrays into a text file
-                if done and self.record:
-                    print("Episode finished after {} timesteps".format(t+1))
-                    ramData = open("../res/training data/ram.txt","a")
-                    actionData = open("../res/training data/action.txt", "a")
+                if done and self.record and iteration_reward >= 100:
+                    #print("Episode finished after {} timesteps".format(t+1))
+                    print("iteration reward: " + str(iteration_reward))
+
+                    ramData = open("../res/training data/ram100.txt","a")
+                    actionData = open("../res/training data/action100.txt", "a")
                     
                     for observation in observations:
                         ramData.write(self.arrToString(observation) + '\n')
@@ -170,8 +172,8 @@ class Simulation():
 #sim.run(10)
 #sim.cem(20)
 
-sim = Simulation('transfer', False)
-sim.run(10)
+sim = Simulation('transfer', True)
+sim.run(trainingLength)
 
 #transferAgent = TransferAgent(True)
 #transferAgent.supervisedLearn(5)
