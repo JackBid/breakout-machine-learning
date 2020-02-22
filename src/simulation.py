@@ -77,7 +77,7 @@ class Simulation():
                 elif self.agentType == 'TrivialAgent':
                     action = self.agent.action(observation, t, config.TRIVIAL_THRESHOLD)
                 else:
-                    action = self.agent.action(observation)
+                    action = self.agent.observationAction(observation)
 
                 actions.append(action)
 
@@ -116,7 +116,7 @@ class Simulation():
         
         return signal
     
-    def meanWeight(weights):
+    def meanWeight(self, weights):
         print(weights[0].shape)
         #for weight in weights:
 
@@ -170,9 +170,9 @@ class Simulation():
 #sim.run(10)
 #sim.cem(20)
 
-#sim = Simulation('cem', False)
-#sim.run(10)
+sim = Simulation('transfer', False)
+sim.run(10)
 
-transferAgent = TransferAgent(True)
-transferAgent.selfLearn(trainingLength)
+#transferAgent = TransferAgent(True)
+#transferAgent.supervisedLearn(5)
 

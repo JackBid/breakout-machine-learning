@@ -117,7 +117,7 @@ class SupervisedAgent():
                     if self.save:
                         torch.save(self.net.state_dict(), self.saveFile)
     
-    def action(self, observation):
+    def observationAction(self, observation):
         observationTensor = torch.tensor(observation)
 
         paddleMid = int(observation[72]) + 13

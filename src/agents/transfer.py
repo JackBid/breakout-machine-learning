@@ -14,7 +14,7 @@ from nets import DeepFullyConnected, FullyConnected, Test
 
 class TransferAgent():
 
-    def __init__(self, save=False):
+    def __init__(self, save=False, selfLearn=False):
         super().__init__()
 
         self.net = FullyConnected(128, 10)
@@ -22,13 +22,18 @@ class TransferAgent():
 
         self.save = save
 
+        if selfLearn: 
+            weightPath = '../res/models/transferSelfLearn.pth'
+        else:
+            weightPath = '../res/models/transfer.pth'
+
         if torch.cuda.is_available():
             self.device = torch.device('cuda')
             self.net.cuda()
-            self.net.load_state_dict(torch.load('../res/models/transferSelfLearn.pth'))
+            self.net.load_state_dict(torch.load(weightPath))
         else:
             self.device = torch.device('cpu')
-            self.net.load_state_dict(torch.load('../res/models/transferSelfLearn.pth', map_location=('cpu')))
+            self.net.load_state_dict(torch.load(weightPath, map_location=('cpu')))
 
         print('device: ' + str(self.device) + '\n')    
 
@@ -77,8 +82,17 @@ class TransferAgent():
         output = self.net(tensorIn)
         return output
 
+    # Get the action from raw observation
+    def observationAction(self, observation):
+        scaled_RAM = self.scaleRAM(observation)
+
+        output = self.net(scaled_RAM)
+
+        maxVal = torch.max(output, 0)
+        return int(maxVal[1])
+
     # Get the action the network takes
-    def action(self, tensorIn):
+    def tensorAction(self, tensorIn):
         output = self.net(tensorIn)
 
         maxVal = torch.max(output, 0)
@@ -190,7 +204,7 @@ class TransferAgent():
                 if t == 0 or ballY > 200 or ballY <= 0:
                     action = 1#config.ACTION_FIRE
                 else:
-                    action = self.action(scaled_RAM)
+                    action = self.tensorAction(scaled_RAM)
 
                 observation, reward, done, info = self.env.step(action)
 

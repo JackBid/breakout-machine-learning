@@ -68,7 +68,7 @@ class BasicReinforcedAgent():
         return outputs
     
     # Get the action the network takes based on an observation
-    def action(self, observation):
+    def observationAction(self, observation):
         observationTensor = torch.tensor(observation, device=self.device)
 
         paddleMid = int(observation[72]) + 8

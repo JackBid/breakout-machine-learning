@@ -21,7 +21,7 @@ class ReinforcedAgent():
         self.env = gym.make('Breakout-ram-v0')
         self.env.frameskip = 0
     
-    def action(self, observation):
+    def observationAction(self, observation):
         observationTensor = torch.tensor(observation)
 
         paddleMid = int(observation[72]) + 13

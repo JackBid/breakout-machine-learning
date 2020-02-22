@@ -22,7 +22,7 @@ def readDataMaxAndAverage(path):
 
 def plotSingleGraph(data, yLabel):
     plt.plot(data)
-    plt.xlabel('Thousands of games played')
+    plt.xlabel('Games Played')
     plt.ylabel(yLabel)
     plt.show()
 
