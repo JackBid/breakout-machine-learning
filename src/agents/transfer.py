@@ -14,13 +14,20 @@ from nets import DeepFullyConnected, FullyConnected, Test
 
 class TransferAgent():
 
-    def __init__(self, save=False, selfLearn=False):
+    def __init__(self, save=False, elite=False, selfLearn=False):
         super().__init__()
 
         self.net = FullyConnected(128, 10)
         self.net.float()
 
         self.save = save
+        
+        if elite:
+            self.ramPath = '../res/training data/ram100.txt'
+            self.actionPath = '../res/training data/action100.txt'
+        else:
+            self.ramPath = '../res/training data/ram.txt'
+            self.actionPath = '../res/training data/action.txt'
 
         if selfLearn: 
             weightPath = '../res/models/transferSelfLearn.pth'
@@ -41,8 +48,8 @@ class TransferAgent():
         self.env = gym.make('Breakout-ram-v0')
         self.env.frameskip = 0
         
-        self.trainingData = self.loadTrainingData('../res/training data/ram.txt')
-        self.testingData = self.loadTestingData('../res/training data/action.txt')
+        self.trainingData = self.loadTrainingData(self.ramPath)
+        self.testingData = self.loadTestingData(self.actionPath)
 
         self.criterion = nn.CrossEntropyLoss()
         self.optimizer = optim.Adam(self.net.parameters())
@@ -57,7 +64,7 @@ class TransferAgent():
 
         for ram in trainingFile:
             data = [int(numeric_string) for numeric_string in ram.split(' ')[:-1]]
-            training.append(torch.tensor(data, dtype=torch.uint8))
+            training.append(torch.tensor(data, dtype=torch.uint8).to(self.device))
         
         return training
 
@@ -68,7 +75,7 @@ class TransferAgent():
 
         for num in testingFile.readline().split(' ')[:-1]:
             data = int(num)
-            testing.append(torch.torch.LongTensor([data]))
+            testing.append(torch.torch.LongTensor([data]).to(self.device))
         
         return testing
     
@@ -119,7 +126,7 @@ class TransferAgent():
         for value in tensor:
             normalised.append((value.item() - minValue) / (maxValue - minValue))
         
-        return torch.tensor(normalised)
+        return torch.tensor(normalised, device=self.device)
 
     # Based on where the ball landed in relation to the paddle, find the target
     def getTarget(self, paddleMid, ballMid):
