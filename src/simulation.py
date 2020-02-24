@@ -90,7 +90,7 @@ class Simulation():
                 # Save the observation and action arrays into a text file
                 if done and self.record and iteration_reward >= 100:
                     #print("Episode finished after {} timesteps".format(t+1))
-                    print("iteration reward: " + str(iteration_reward))
+                    #print("iteration reward: " + str(iteration_reward))
 
                     ramData = open("../res/training data/ram100.txt","a")
                     actionData = open("../res/training data/action100.txt", "a")
@@ -109,6 +109,7 @@ class Simulation():
         
         averageReward = sum(rewards) / len(rewards)
         print('Average reward achievied in ' + str(iterations) + ' iterations: ' + str(averageReward))
+        print(rewards)
 
         self.env.close()
     
@@ -172,9 +173,9 @@ class Simulation():
 #sim.run(10)
 #sim.cem(20)
 
-#sim = Simulation('transfer', True)
-#sim.run(100)
+sim = Simulation('transfer', True)
+sim.run(500)
 
-transferAgent = TransferAgent(True, True, False)
-transferAgent.supervisedLearn(100)
+#transferAgent = TransferAgent(True, True, False)
+#transferAgent.supervisedLearn(100)
 
