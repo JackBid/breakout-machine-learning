@@ -23,6 +23,7 @@ class TransferAgent():
         self.save = save
         
         if elite:
+            print('elite')
             self.ramPath = '../res/training data/ram100.txt'
             self.actionPath = '../res/training data/action100.txt'
         else:
@@ -30,17 +31,17 @@ class TransferAgent():
             self.actionPath = '../res/training data/action.txt'
 
         if selfLearn: 
-            weightPath = '../res/models/transferSelfLearn.pth'
+            self.weightPath = '../res/models/transferSelfLearn.pth'
         else:
-            weightPath = '../res/models/transfer.pth'
+            self.weightPath = '../res/models/transfer.pth'
 
         if torch.cuda.is_available():
             self.device = torch.device('cuda')
             self.net.cuda()
-            self.net.load_state_dict(torch.load(weightPath))
+            self.net.load_state_dict(torch.load(self.weightPath))
         else:
             self.device = torch.device('cpu')
-            self.net.load_state_dict(torch.load(weightPath, map_location=('cpu')))
+            self.net.load_state_dict(torch.load(self.weightPath, map_location=('cpu')))
 
         print('device: ' + str(self.device) + '\n')    
 
@@ -52,7 +53,7 @@ class TransferAgent():
         self.testingData = self.loadTestingData(self.actionPath)
 
         self.criterion = nn.CrossEntropyLoss()
-        self.optimizer = optim.Adam(self.net.parameters())
+        self.optimizer = optim.Adam(self.net.parameters(), lr=0.01)
 
         # Create supervised agent
         self.supervisedAgent = SupervisedAgent()
@@ -180,7 +181,7 @@ class TransferAgent():
                     running_loss = 0.0
 
                     if self.save:
-                        torch.save(self.net.state_dict(), '../res/models/transfer.pth')
+                        torch.save(self.net.state_dict(), self.weightPath)
 
     def selfLearn(self, iterations):
 
