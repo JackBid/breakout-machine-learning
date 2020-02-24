@@ -64,7 +64,7 @@ class Simulation():
             # One game iteration
             while True:
                 
-                self.env.render()
+                #self.env.render()
 
                 observations.append(observation)
 
@@ -172,8 +172,8 @@ class Simulation():
 #sim.run(10)
 #sim.cem(20)
 
-sim = Simulation('transfer', True)
-sim.run(10)
+#sim = Simulation('transfer', True)
+#sim.run(100)
 
 transferAgent = TransferAgent(True, True, False)
 transferAgent.supervisedLearn(100)

@@ -53,7 +53,7 @@ class TransferAgent():
         self.testingData = self.loadTestingData(self.actionPath)
 
         self.criterion = nn.CrossEntropyLoss()
-        self.optimizer = optim.Adam(self.net.parameters(), lr=0.01)
+        self.optimizer = optim.Adam(self.net.parameters())
 
         # Create supervised agent
         self.supervisedAgent = SupervisedAgent()
