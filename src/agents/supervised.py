@@ -5,10 +5,13 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 from nets import FullyConnected, Test
+from agents.util import Util
 
 class SupervisedAgent():
 
     def __init__(self, network='fullyConnected', load=True, save=True, saveFile=''):
+
+        self.util = Util()
 
         # Start by processing the arguments in order to initiate the network correctly.
         # This allows users to choose what network/model should be used,
@@ -39,48 +42,12 @@ class SupervisedAgent():
         if self.load:
             self.net.load_state_dict(torch.load(self.saveFile))
 
-
-        self.trainingData = self.loadTrainingData('../res/training data/ram.txt')
-        self.testingData = self.loadTestingData('../res/training data/action.txt')
+        self.trainingData = self.util.loadTrainingData('../res/training data/ram.txt')
+        self.testingData = self.util.loadTestingData('../res/training data/action.txt')
 
         self.criterion = nn.CrossEntropyLoss()
         self.optimizer = optim.Adam(self.net.parameters())
 
-    def normalise(self, tensor):
-
-        tensorSum = int(tensor.sum())
-        return tensor / tensorSum
-
-    def customLoss(self, outputs, target):
-        target_tensor = torch.zeros(4)
-        target_tensor[target] = 1
-        outputs = self.normalise(F.softmax(outputs, dim=0))
-
-        loss = torch.mean((outputs - target)**2)
-
-        return loss
-
-    def loadTrainingData(self, path):
-        training = []
-
-        trainingFile = open(path, "r")
-
-        for ram in trainingFile:
-            data = [int(numeric_string) for numeric_string in ram.split(' ')[:-1]]
-            training.append(torch.tensor(data, dtype=torch.uint8))
-        
-        return training
-
-    def loadTestingData(self, path):
-        testing = []
-
-        testingFile = open(path, "r")
-
-        for num in testingFile.readline().split(' ')[:-1]:
-            data = int(num)
-            testing.append(torch.torch.LongTensor([data]))
-        
-        return testing
 
     def train(self, epochs):
 

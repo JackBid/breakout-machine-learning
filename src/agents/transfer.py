@@ -10,12 +10,15 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 from agents.supervised import SupervisedAgent
+from agents.util import Util
 from nets import DeepFullyConnected, FullyConnected, Test
 
 class TransferAgent():
 
     def __init__(self, save=False, elite=False, selfLearn=False):
         super().__init__()
+
+        self.util = Util()
 
         self.net = FullyConnected(128, 10)
         self.net.float()
@@ -49,72 +52,28 @@ class TransferAgent():
         self.env = gym.make('Breakout-ram-v0')
         self.env.frameskip = 0
         
-        self.trainingData = self.loadTrainingData(self.ramPath)
-        self.testingData = self.loadTestingData(self.actionPath)
+        self.trainingData = self.util.loadTrainingData(self.ramPath)
+        self.testingData = self.util.loadTestingData(self.actionPath)
 
         self.criterion = nn.CrossEntropyLoss()
         self.optimizer = optim.Adam(self.net.parameters())
 
         # Create supervised agent
         self.supervisedAgent = SupervisedAgent()
-
-    def loadTrainingData(self, path):
-        training = []
-
-        trainingFile = open(path, "r")
-
-        for ram in trainingFile:
-            data = [int(numeric_string) for numeric_string in ram.split(' ')[:-1]]
-            training.append(torch.tensor(data, dtype=torch.uint8).to(self.device))
-        
-        return training
-
-    def loadTestingData(self, path):
-        testing = []
-
-        testingFile = open(path, "r")
-
-        for num in testingFile.readline().split(' ')[:-1]:
-            data = int(num)
-            testing.append(torch.torch.LongTensor([data]).to(self.device))
-        
-        return testing
     
     # Get the action from a trained supervised agent
     def getSupervisedAgentAction(self, observation):
         action = self.supervisedAgent.action(observation)
         return action
-    
-    # Get the output of the network
-    def getOutput(self, tensorIn):
-        output = self.net(tensorIn)
-        return output
 
     # Get the action from raw observation
     def observationAction(self, observation):
-        scaled_RAM = self.scaleRAM(observation)
+        scaled_RAM = self.util.scaleRAM(observation)
 
         output = self.net(scaled_RAM)
 
         maxVal = torch.max(output, 0)
         return int(maxVal[1])
-
-    # Get the action the network takes
-    def tensorAction(self, tensorIn):
-        output = self.net(tensorIn)
-
-        maxVal = torch.max(output, 0)
-        return int(maxVal[1])
-
-    # Scale RAM values (tensor) to be between 0-1
-    def scaleRAM(self, RAM):
-
-        scaled_RAM = []
-
-        for value in RAM:
-            scaled_RAM.append(value.item() / 255)
-
-        return torch.tensor(scaled_RAM).to(self.device)
 
     # Transfor tensor to have values [0,1]
     def normaliseTensor(self, tensor):
@@ -154,11 +113,10 @@ class TransferAgent():
                 self.optimizer.zero_grad()
 
                 # Scale the RAM values to be between 0-1
-                scaled_RAM = self.scaleRAM(self.trainingData[i])
+                scaled_RAM = self.util.scaleRAM(self.trainingData[i])
 
                 # Get the outputs and target
                 outputs = self.net(scaled_RAM)
-                print(self.scaleRAM(outputs))
                 target = self.testingData[i].clone()
 
                 # Unsqueeze outputs for loss function
@@ -208,12 +166,12 @@ class TransferAgent():
                 ballY = int(observation[101])
                 
                 # Get scaled ram tensor for input to network
-                scaled_RAM = self.scaleRAM(observation)
+                scaled_RAM = self.util.scaleRAM(observation)
                 
                 if t == 0 or ballY > 200 or ballY <= 0:
                     action = 1#config.ACTION_FIRE
                 else:
-                    action = self.tensorAction(scaled_RAM)
+                    action = self.util.tensorAction(scaled_RAM)
 
                 observation, reward, done, info = self.env.step(action)
 
@@ -221,7 +179,7 @@ class TransferAgent():
         
                     self.optimizer.zero_grad()
                     
-                    output = self.getOutput(scaled_RAM)
+                    output = self.util.getOutput(scaled_RAM)
                     output = F.softmax(output, dim=0)
                     target = self.getTarget(paddleMid, ballMid)
 

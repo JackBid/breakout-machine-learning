@@ -176,9 +176,12 @@ class Simulation():
 #sim = Simulation('transfer', True)
 #sim.run(500)
 
-#transferAgent = TransferAgent(True, True, False)
-#transferAgent.supervisedLearn(100)
+transferAgent = TransferAgent(True, True, False)
+transferAgent.supervisedLearn(100)
 
-rl = BasicReinforcedAgent()
-rl.train(trainingLength)
+#rl = BasicReinforcedAgent()
+#rl.train(3)
+
+#sup = SupervisedAgent()
+#sup.train(5)
 
