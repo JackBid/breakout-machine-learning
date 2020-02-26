@@ -158,11 +158,12 @@ class TransferAgent():
 
                 # Get the outputs and target
                 outputs = self.net(scaled_RAM)
+                print(self.scaleRAM(outputs))
                 target = self.testingData[i].clone()
 
                 # Unsqueeze outputs for loss function
                 outputs = outputs.unsqueeze(dim=0)
-
+                
                 loss = self.criterion(outputs, target)
                 loss.backward()
                 self.optimizer.step()

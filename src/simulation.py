@@ -95,11 +95,11 @@ class Simulation():
                     ramData = open("../res/training data/ram100.txt","a")
                     actionData = open("../res/training data/action100.txt", "a")
                     
-                    for observation in observations:
-                        ramData.write(self.arrToString(observation) + '\n')
+                    #for observation in observations:
+                        #ramData.write(self.arrToString(observation) + '\n')
 
-                    for action in actions:
-                        actionData.write(str(action) + ' ')
+                    #for action in actions:
+                        #actionData.write(str(action) + ' ')
                     break
 
                 if done:
@@ -173,9 +173,12 @@ class Simulation():
 #sim.run(10)
 #sim.cem(20)
 
-sim = Simulation('transfer', True)
-sim.run(500)
+#sim = Simulation('transfer', True)
+#sim.run(500)
 
 #transferAgent = TransferAgent(True, True, False)
 #transferAgent.supervisedLearn(100)
+
+rl = BasicReinforcedAgent()
+rl.train(trainingLength)
 
