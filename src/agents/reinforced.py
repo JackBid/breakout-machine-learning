@@ -23,10 +23,10 @@ class BasicReinforcedAgent():
         if torch.cuda.is_available():
             self.device = torch.device('cuda')
             self.net.cuda()
-            self.net.load_state_dict(torch.load('../res/models/transfer.pth'))
+            self.net.load_state_dict(torch.load('../res/models/test.pth'))
         else:
             self.device = torch.device('cpu')
-            self.net.load_state_dict(torch.load('../res/models/transfer.pth', map_location=('cpu')))
+            self.net.load_state_dict(torch.load('../res/models/test.pth', map_location=('cpu')))
 
         print('device: ' + str(self.device) + '\n')    
 
