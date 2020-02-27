@@ -2,6 +2,7 @@ from agents.trivial import TrivialAgent
 from agents.supervised import SupervisedAgent
 from agents.reinforced import BasicReinforcedAgent
 from agents.transfer import TransferAgent
+from agents.evolvedReinforced import EvolvedReinforcedAgent
 import numpy as np
 import torch
 import config
@@ -176,11 +177,11 @@ class Simulation():
 #sim = Simulation('transfer', True)
 #sim.run(500)
 
-transferAgent = TransferAgent(True, True, False)
-transferAgent.supervisedLearn(100)
+#transferAgent = TransferAgent(True, True, False)
+#transferAgent.supervisedLearn(100)
 
-#rl = BasicReinforcedAgent()
-#rl.train(3)
+rl = EvolvedReinforcedAgent()
+rl.train(trainingLength)
 
 #sup = SupervisedAgent()
 #sup.train(5)
