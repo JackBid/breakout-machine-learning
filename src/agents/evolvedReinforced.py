@@ -84,7 +84,7 @@ class EvolvedReinforcedAgent():
             t+=1
 
             if t==sampleLength:
-                if not didDie:
+                #if not didDie:
                     #print('new weights accepted.')
                 #print('replay finished...\n')
                 break
