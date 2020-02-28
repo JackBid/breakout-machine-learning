@@ -3,6 +3,7 @@ from agents.supervised import SupervisedAgent
 from agents.reinforced import BasicReinforcedAgent
 from agents.transfer import TransferAgent
 from agents.evolvedReinforced import EvolvedReinforcedAgent
+from agents.util import Util
 import numpy as np
 import torch
 import config
@@ -21,6 +22,8 @@ class Simulation():
 
     def __init__(self, agent='supervised', record=False):
 
+        self.util = Util()
+
         # Create a gym environment (game environment)
         self.env = gym.make('Breakout-ram-v0')
         self.env.frameskip = 0
@@ -30,20 +33,14 @@ class Simulation():
             self.agent = SupervisedAgent('fullyConnected', True)
         elif agent == 'cem':
             self.agent = SupervisedAgent('cem', True, False)
+        elif agent == 'evolved':
+            self.agent = EvolvedReinforcedAgent()
         else:
             self.agent = TrivialAgent()
 
         # Initialise other variables
         self.record = record
         self.agentType = type(self.agent).__name__
-
-    
-    # Convert an array to string
-    def arrToString(self, arr):
-        arrString = ''
-        for val in arr:
-            arrString += str(val) + ' '
-        return arrString
 
     # Run the simulation
     def run(self, iterations):
@@ -97,7 +94,7 @@ class Simulation():
                     actionData = open("../res/training data/action100.txt", "a")
                     
                     #for observation in observations:
-                        #ramData.write(self.arrToString(observation) + '\n')
+                        #ramData.write(self.util.arrToString(observation) + '\n')
 
                     #for action in actions:
                         #actionData.write(str(action) + ' ')
@@ -137,7 +134,7 @@ class Simulation():
             elite_frac (float): percentage of top performers to use in update
             sigma (float): standard deviation of additive noise
         """
-        rAgent = ReinforcedAgent()
+        rAgent = BasicReinforcedAgent()
 
         with torch.no_grad():
             fc1_weight = self.agent.net.fc1.weight
@@ -174,15 +171,15 @@ class Simulation():
 #sim.run(10)
 #sim.cem(20)
 
-#sim = Simulation('transfer', True)
-#sim.run(500)
+sim = Simulation('evolved', True)
+sim.run(500)
 
 #transferAgent = TransferAgent(True, True, False)
 #transferAgent.supervisedLearn(100)
+#
+#rl = EvolvedReinforcedAgent()
+#rl.train(200)
 
-rl = EvolvedReinforcedAgent()
-rl.train(trainingLength)
-
-#sup = SupervisedAgent()
-#sup.train(5)
+#sup = SupervisedAgent('evolved', True, True)
+#sup.train(50)
 

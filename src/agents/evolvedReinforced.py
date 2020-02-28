@@ -41,15 +41,27 @@ class EvolvedReinforcedAgent():
 
         self.optimizer = optim.Adam(self.net.parameters())
 
+    # Write non-dying moves to a textfile
+    def writeToFiles(self, observations, actions):
+        ramData = open("../res/training data/evolvedObservation.txt","a")
+        actionData = open("../res/training data/evolvedAction.txt", "a")
+                    
+        for observation in observations:
+            ramData.write(self.util.arrToString(observation) + '\n')
+
+        for action in actions:
+            actionData.write(str(action) + ' ')
+
     # Add random noise to parameters
     def addParamNoise(self, sigma):
         for param in self.net.parameters():
             noise = torch.FloatTensor(param.shape).uniform_(-sigma, sigma)
             param.data = torch.add(param, noise)
 
-
     def replaySample(self, observation, startingState, observations, actions, lives, sampleLength):
         
+        prevParams = self.net.parameters
+
         #print('starting replay...')
 
         # add random noise to weights
@@ -57,6 +69,9 @@ class EvolvedReinforcedAgent():
 
         # restore the previous state
         self.env.ale.restoreState(startingState)
+
+        newObservations = []
+        newActions = []
 
         didDie = False
         t = 0
@@ -78,15 +93,18 @@ class EvolvedReinforcedAgent():
 
             observation, reward, done, info = self.env.step(action)
 
+            newObservations.append(observation)
+            newActions.append(action)
+
             if info['ale.lives'] < lives:
                 didDie = True
 
             t+=1
 
             if t==sampleLength:
-                #if not didDie:
-                    #print('new weights accepted.')
-                #print('replay finished...\n')
+                if didDie:
+                    self.net.parameters = prevParams
+                    #self.writeToFiles(newObservations, newActions)
                 break
 
         return
@@ -98,14 +116,14 @@ class EvolvedReinforcedAgent():
         timeLimit = 0
         sampleScore = 0
         lives = 5
-        maxSampleLength = 50
+        maxSampleLength = 100
 
         observations = []
         actions = []
         states = []
 
         while True:
-            #self.env.render()
+            self.env.render()
             
             # Start sampling
             # If record is false theres a chance we may set it to true
@@ -136,7 +154,7 @@ class EvolvedReinforcedAgent():
             states.append(self.env.ale.cloneState())
 
             if info['ale.lives'] < lives:
-                if t < 50:
+                if t < maxSampleLength:
                     sampleLength = t
                 else:
                     sampleLength = maxSampleLength
@@ -149,10 +167,6 @@ class EvolvedReinforcedAgent():
                 states = []
                 observations = []
                 actionSamples = []
-                
-
-            if ballY >= 175:
-                self.processLoss(paddleMid, ballMid, output)
 
             observations.append(observation)
             actions.append(action)
@@ -242,3 +256,11 @@ class EvolvedReinforcedAgent():
         elapsed_time = time.time() - startTime
         self.processTraining(totalReward, iterations, maxReward, elapsed_time)
         startTime = time.time()
+
+    def observationAction(self, observation):
+
+        ram = self.util.observationToTensor(observation)
+        output = self.util.getScaledOutput(self.net, ram)
+
+        maxVal = torch.max(output, 0)
+        return int(maxVal[1])

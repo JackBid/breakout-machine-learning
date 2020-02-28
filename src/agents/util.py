@@ -19,6 +19,13 @@ class Util():
         else:
             self.device = torch.device('cpu')
 
+    # Convert an array to string
+    def arrToString(self, arr):
+        arrString = ''
+        for val in arr:
+            arrString += str(val) + ' '
+        return arrString
+
     # Load training data from a file into array
     def loadTrainingData(self, path):
         training = []

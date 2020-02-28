@@ -25,6 +25,8 @@ class SupervisedAgent():
                 self.saveFile = '../res/models/test.pth'
             if network == 'cem':
                 self.saveFile = '../res/models/cem.pth'
+            if network == 'evolved':
+                self.saveFile = '../res/models/evolved.pth'
         else:
             self.saveFile = '../res/models/' + network + '_' + saveFile + '.pth'
 
@@ -37,13 +39,15 @@ class SupervisedAgent():
             self.net = Test()
         elif network.lower() == 'cem':
             self.net = FullyConnected(3, 6)
+        elif network.lower() == 'evolved':
+            self.net = FullyConnected(128, 10)
         
         self.net = self.net.float()
         if self.load:
             self.net.load_state_dict(torch.load(self.saveFile))
 
-        self.trainingData = self.util.loadTrainingData('../res/training data/ram.txt')
-        self.testingData = self.util.loadTestingData('../res/training data/action.txt')
+        self.trainingData = self.util.loadTrainingData('../res/training data/evolvedObservation.txt')
+        self.testingData = self.util.loadTestingData('../res/training data/evolvedAction.txt')
 
         self.criterion = nn.CrossEntropyLoss()
         self.optimizer = optim.Adam(self.net.parameters())
@@ -61,7 +65,8 @@ class SupervisedAgent():
                 ballMid = int(self.trainingData[i][99]) + 1
                 ballY = int(self.trainingData[i][101])
                 
-                tensorInput = torch.tensor([ballMid, ballY, paddleMid])
+                #tensorInput = torch.tensor([ballMid, ballY, paddleMid])
+                tensorInput = self.trainingData[i]
                 outputs = self.net(tensorInput.float())
 
                 target = self.testingData[i].clone()
