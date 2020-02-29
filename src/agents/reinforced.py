@@ -41,10 +41,32 @@ class BasicReinforcedAgent():
 
         self.optimizer = optim.Adam(self.net.parameters())
 
+
+    def calculateLoss(self, sampleReward, sampleLength, sigma):
+
+        if sampleReward < 0:      
+            denominator = (0.5*sampleReward) + (sampleLength/2)
+        else:
+            denominator = sampleReward*(sampleLength/2) + sampleLength
+
+        if denominator == 0:
+            return 0.0
+        
+        return sampleLength / denominator
+
+
     # One game played by the agent
     def gameCycle(self, observation, t, iteration_reward):
+        
+        sampleLength = 100
+        sampleCounter = 0
+        sampleReward = 0
+
+        deathPenalty = 50
+        lives = 5
+
         while True:
-            self.env.render()
+            #self.env.render()
 
             paddleMid = int(observation[72]) + 8
             ballMid = int(observation[99]) + 1
@@ -59,23 +81,40 @@ class BasicReinforcedAgent():
                 action = self.util.tensorAction(self.net, ram)
 
             observation, reward, done, info = self.env.step(action)
+
+            # If agent dies incur a large penalty
+            if lives > info['ale.lives']:
+                sampleReward -= deathPenalty
+                lives -= 1
             
-            if ballY >= 175:
-                self.processLoss(paddleMid, ballMid, output)
+            #if ballY >= 175:
+            #    self.processLoss(paddleMid, ballMid, output)
 
             iteration_reward += reward
+            sampleReward += reward
+
             t += 1
+            sampleCounter += 1
+
+
+            if sampleCounter == sampleLength:
+                targetLoss = self.calculateLoss(sampleReward, sampleLength, 50)
+                #print('reward: ' + str(sampleReward) + ' loss: ' + str(targetLoss))
+                self.processLoss(output, targetLoss)
+                sampleCounter = 0
+                sampleReward = 0
 
             if done:    
                 return iteration_reward, t
 
 
     # Calculate and apply loss
-    def processLoss(self, paddleMid, ballMid, output):
+    def processLoss(self, output, targetLoss):
         self.optimizer.zero_grad()
 
-        targetLoss = self.util.calculateTargetLoss(paddleMid, ballMid)
         loss = self.util.applyLoss(output, targetLoss)
+        #print(loss)
+        #print()
         loss.backward()
         
         self.optimizer.step()
@@ -118,6 +157,7 @@ class BasicReinforcedAgent():
 
             # One complete game
             iteration_reward, t = self.gameCycle(observation, t, iteration_reward)
+            print(iteration_reward)
                 
             totalReward += iteration_reward
             if iteration_reward > maxReward:

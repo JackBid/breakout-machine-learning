@@ -171,14 +171,17 @@ class Simulation():
 #sim.run(10)
 #sim.cem(20)
 
-sim = Simulation('evolved', True)
-sim.run(500)
+#sim = Simulation('evolved', True)
+#sim.run(500)
 
 #transferAgent = TransferAgent(True, True, False)
 #transferAgent.supervisedLearn(100)
 #
 #rl = EvolvedReinforcedAgent()
 #rl.train(200)
+
+rl = BasicReinforcedAgent()
+rl.train(50)
 
 #sup = SupervisedAgent('evolved', True, True)
 #sup.train(50)

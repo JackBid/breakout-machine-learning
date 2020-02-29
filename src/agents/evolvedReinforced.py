@@ -26,10 +26,10 @@ class EvolvedReinforcedAgent():
         if torch.cuda.is_available():
             self.device = torch.device('cuda')
             self.net.cuda()
-            self.net.load_state_dict(torch.load('../res/models/test.pth'))
+            self.net.load_state_dict(torch.load('../res/models/evolved1.pth'))
         else:
             self.device = torch.device('cpu')
-            self.net.load_state_dict(torch.load('../res/models/test.pth', map_location=('cpu')))
+            self.net.load_state_dict(torch.load('../res/models/evolved1.pth', map_location=('cpu')))
 
         print('device: ' + str(self.device) + '\n')    
 
@@ -41,22 +41,51 @@ class EvolvedReinforcedAgent():
 
         self.optimizer = optim.Adam(self.net.parameters())
 
-    # Write non-dying moves to a textfile
-    def writeToFiles(self, observations, actions):
-        ramData = open("../res/training data/evolvedObservation.txt","a")
-        actionData = open("../res/training data/evolvedAction.txt", "a")
-                    
-        for observation in observations:
-            ramData.write(self.util.arrToString(observation) + '\n')
-
-        for action in actions:
-            actionData.write(str(action) + ' ')
-
     # Add random noise to parameters
     def addParamNoise(self, sigma):
         for param in self.net.parameters():
             noise = torch.FloatTensor(param.shape).uniform_(-sigma, sigma)
             param.data = torch.add(param, noise)
+
+    def calculateActionLoss(self, action, target):
+        if action == target:
+            loss = 0
+        elif (action == 2 and target == 3) or (action == 3 and target == 2):
+            loss = 0.1
+        else:
+            loss = 0.05
+
+        return torch.tensor(loss)
+
+    def learnFromReplay(self, newObservations, newActions, newStates):
+
+        for i in range(0, len(newStates)):
+
+            # restore the previous state
+            self.env.ale.restoreState(newStates[i])
+            observation = newObservations[i]
+
+            # get action
+            ram = self.util.observationToTensor(observation)
+            ballY = int(observation[101])
+
+            if ballY > 200 or ballY <= 0:
+                action = 1
+            else:
+                action = self.util.tensorAction(self.net, ram)
+
+            output = self.util.getScaledOutput(self.net, ram)
+
+            # calculate and apply loss
+            targetLoss = self.calculateActionLoss(action, newActions[i])
+
+            self.optimizer.zero_grad()
+
+            loss = self.util.applyLoss(output, targetLoss)
+            loss.backward()
+            
+            self.optimizer.step()
+
 
     def replaySample(self, observation, startingState, observations, actions, lives, sampleLength):
         
@@ -72,6 +101,7 @@ class EvolvedReinforcedAgent():
 
         newObservations = []
         newActions = []
+        states = []
 
         didDie = False
         t = 0
@@ -80,8 +110,6 @@ class EvolvedReinforcedAgent():
             
             #self.env.render()
 
-            paddleMid = int(observation[72]) + 8
-            ballMid = int(observation[99]) + 1
             ballY = int(observation[101])
 
             ram = self.util.observationToTensor(observation)
@@ -93,6 +121,7 @@ class EvolvedReinforcedAgent():
 
             observation, reward, done, info = self.env.step(action)
 
+            states.append(self.env.ale.cloneState())
             newObservations.append(observation)
             newActions.append(action)
 
@@ -102,8 +131,10 @@ class EvolvedReinforcedAgent():
             t+=1
 
             if t==sampleLength:
+                #self.net.parameters = prevParams
                 if didDie:
                     self.net.parameters = prevParams
+                    #self.learnFromReplay(newObservations, newActions, states)
                     #self.writeToFiles(newObservations, newActions)
                 break
 
@@ -123,7 +154,7 @@ class EvolvedReinforcedAgent():
         states = []
 
         while True:
-            self.env.render()
+            #self.env.render()
             
             # Start sampling
             # If record is false theres a chance we may set it to true
@@ -217,7 +248,7 @@ class EvolvedReinforcedAgent():
         file = open('../res/evolvedProgress.txt', 'a+')
         file.write(str(average_reward) + ' ' + str(maxReward) + '\n')
         
-        torch.save(self.net.state_dict(), '../res/models/test.pth')
+        torch.save(self.net.state_dict(), '../res/models/evolved1.pth')
 
         maxReward = 0
         total = 0
