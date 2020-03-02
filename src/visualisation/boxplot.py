@@ -18,7 +18,7 @@ data = np.vstack((np_expert, np_evolved)).T
 def boxplot(data, title):
     fig1, ax1 = plt.subplots()
     ax1.set_title(title)
-    ax1.boxplot(data, labels=['Expert System', 'Transfer Learning'])
+    ax1.boxplot(data, labels=['Expert System', 'Evolved'])
     plt.show()
 
 boxplot(data, 'Boxplot showing reward acheived by agents')

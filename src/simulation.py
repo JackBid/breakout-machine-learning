@@ -51,6 +51,8 @@ class Simulation():
         for i_episode in range(iterations):
 
             observation = self.env.reset()
+            #self.env.ale.restoreState(2803055230704)
+           # observation, reward, done, info = self.env.step(0)
 
             # Every observation and action is stored and then saved to a text file if record is set to true
             observations = []
@@ -62,8 +64,8 @@ class Simulation():
             # One game iteration
             while True:
                 
-                #self.env.render()
-
+                self.env.render()
+                print(type(self.env.ale.cloneState()))
                 observations.append(observation)
 
                 ballY = int(observation[101])
@@ -83,6 +85,8 @@ class Simulation():
 
                 iteration_reward += reward
                 t += 1
+
+                time.sleep(0.5)
                 
                 # If the game is finished and record is set to true,
                 # Save the observation and action arrays into a text file
@@ -167,8 +171,8 @@ class Simulation():
 
 
 #agent = SupervisedAgent('fc364', True, False)
-#sim = Simulation('supervised', False)
-#sim.run(10)
+sim = Simulation('supervised', False)
+sim.run(100)
 #sim.cem(20)
 
 #sim = Simulation('evolved', True)
@@ -178,10 +182,10 @@ class Simulation():
 #transferAgent.supervisedLearn(100)
 #
 #rl = EvolvedReinforcedAgent()
-#rl.train(200)
+#rl.train(50)
 
-rl = BasicReinforcedAgent()
-rl.train(50)
+#rl = BasicReinforcedAgent()
+#rl.train(50)
 
 #sup = SupervisedAgent('evolved', True, True)
 #sup.train(50)

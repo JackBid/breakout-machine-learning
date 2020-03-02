@@ -26,10 +26,10 @@ class BasicReinforcedAgent():
         if torch.cuda.is_available():
             self.device = torch.device('cuda')
             self.net.cuda()
-            self.net.load_state_dict(torch.load('../res/models/test.pth'))
+            self.net.load_state_dict(torch.load('../res/models/transfer.pth'))
         else:
             self.device = torch.device('cpu')
-            self.net.load_state_dict(torch.load('../res/models/test.pth', map_location=('cpu')))
+            self.net.load_state_dict(torch.load('../res/models/transfer.pth', map_location=('cpu')))
 
         print('device: ' + str(self.device) + '\n')    
 
@@ -42,17 +42,17 @@ class BasicReinforcedAgent():
         self.optimizer = optim.Adam(self.net.parameters())
 
 
-    def calculateLoss(self, sampleReward, sampleLength, sigma):
+    def calculateLoss(self, sampleReward, sampleLength):
 
         if sampleReward < 0:      
-            denominator = (0.5*sampleReward) + (sampleLength/2)
+            denominator = (0.6*sampleReward) + (sampleLength+1)
         else:
-            denominator = sampleReward*(sampleLength/2) + sampleLength
+            denominator = (sampleReward*(sampleLength*2) + sampleLength)*50
 
         if denominator == 0:
             return 0.0
         
-        return sampleLength / denominator
+        return (sampleLength / denominator)
 
 
     # One game played by the agent
@@ -96,9 +96,8 @@ class BasicReinforcedAgent():
             t += 1
             sampleCounter += 1
 
-
             if sampleCounter == sampleLength:
-                targetLoss = self.calculateLoss(sampleReward, sampleLength, 50)
+                targetLoss = self.calculateLoss(sampleReward, sampleLength)
                 #print('reward: ' + str(sampleReward) + ' loss: ' + str(targetLoss))
                 self.processLoss(output, targetLoss)
                 sampleCounter = 0
@@ -113,8 +112,6 @@ class BasicReinforcedAgent():
         self.optimizer.zero_grad()
 
         loss = self.util.applyLoss(output, targetLoss)
-        #print(loss)
-        #print()
         loss.backward()
         
         self.optimizer.step()
@@ -135,7 +132,7 @@ class BasicReinforcedAgent():
         #file = open('../res/learning_progress2.txt', 'a+')
         #file.write(str(average_reward) + ' ' + str(maxReward) + '\n')
         
-        torch.save(self.net.state_dict(), '../res/models/test.pth')
+        torch.save(self.net.state_dict(), '../res/models/evolved2.pth')
 
         maxReward = 0
         total = 0

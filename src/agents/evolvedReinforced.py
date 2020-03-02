@@ -87,7 +87,7 @@ class EvolvedReinforcedAgent():
             self.optimizer.step()
 
 
-    def replaySample(self, observation, startingState, observations, actions, lives, sampleLength):
+    def replaySample(self, startingState, observations, actions, lives, sampleLength, originalScore):
         
         prevParams = self.net.parameters
 
@@ -105,10 +105,13 @@ class EvolvedReinforcedAgent():
 
         didDie = False
         t = 0
+        newScore = 0
+
+        observation = observations[0]
 
         while True:
             
-            #self.env.render()
+            self.env.render()
 
             ballY = int(observation[101])
 
@@ -125,13 +128,19 @@ class EvolvedReinforcedAgent():
             newObservations.append(observation)
             newActions.append(action)
 
+            newScore += reward
+
             if info['ale.lives'] < lives:
                 didDie = True
 
             t+=1
 
             if t==sampleLength:
-                #self.net.parameters = prevParams
+               # print('new score: ' + str(newScore))
+                #if newScore <= originalScore:
+                #    self.net.parameters = prevParams
+                #else:
+                #    print('new params accepted')
                 if didDie:
                     self.net.parameters = prevParams
                     #self.learnFromReplay(newObservations, newActions, states)
@@ -153,20 +162,23 @@ class EvolvedReinforcedAgent():
         actions = []
         states = []
 
+        sampleLength = 100
+
         while True:
             #self.env.render()
             
             # Start sampling
             # If record is false theres a chance we may set it to true
+            
             '''
             if not record:
                 rand = random.random()
-                if rand < 0.01:
-                    print('start of sample')
+                if rand < 0.05:
+                    #print('start of sample')
                     startingState = self.env.ale.cloneState()
                     sampleScore = 0
                     record = True
-                    timeLimit = t + 60'''
+                    timeLimit = t + sampleLength'''
 
             paddleMid = int(observation[72]) + 8
             ballMid = int(observation[99]) + 1
@@ -193,7 +205,7 @@ class EvolvedReinforcedAgent():
                 startState = states[-sampleLength]
                 observationSamples = observations[-sampleLength:]
                 actionSamples = actions[-sampleLength:]
-                self.replaySample(observationSamples[0], startState, observationSamples, actionSamples, lives, sampleLength)
+                self.replaySample(startState, observationSamples, actionSamples, lives, sampleLength, sampleScore)
                 t = 0
                 states = []
                 observations = []
@@ -205,18 +217,17 @@ class EvolvedReinforcedAgent():
             iteration_reward += reward
             sampleScore += reward
             t += 1
-
             '''
             # End sampling
             if record and t == timeLimit:
-                print('inital score:' + str(sampleScore))
-                time.sleep(1)
-                self.replaySample(startingState, observations, actions)
+                #print('inital score:' + str(sampleScore))
+                self.replaySample(startingState, observations[-sampleLength:], actions, lives, sampleLength, sampleScore)
                 record = False
                 observations = []
                 actions = []
                 timeLimit = 0
-                print('end of sample\n')'''
+                sampleScore = 0
+               # print('end of sample\n')'''
 
             if done:    
                 return iteration_reward, t
