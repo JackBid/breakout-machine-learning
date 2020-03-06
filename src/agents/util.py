@@ -90,7 +90,7 @@ class Util():
     # Take observation input and convert to scaled tensor
     def observationToTensor(self, observation):
         observation = self.scaleRAM(observation)
-        return torch.tensor(observation, requires_grad=True, device=self.device)
+        return observation
 
     # Get the output from the network from a particular observation
     def getOutput(self, net, tensorIn):
@@ -100,7 +100,7 @@ class Util():
     # Get the output from the network from a particular observation scaled
     def getScaledOutput(self, net, tensorIn):
         output = net(tensorIn)
-        output = F.softmax(output)
+        output = F.softmax(output, dim=0)
         return output
     
     # Get the action the network takes based on an observation
