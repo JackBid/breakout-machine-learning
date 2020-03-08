@@ -182,7 +182,7 @@ class Simulation():
 #transferAgent.supervisedLearn(100)
 #
 rl = EvolvedReinforcedAgent()
-rl.train(100)
+rl.train(trainingLength)
 
 #rl = BasicReinforcedAgent()
 #rl.train(50)

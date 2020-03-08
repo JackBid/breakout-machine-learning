@@ -252,8 +252,8 @@ class EvolvedReinforcedAgent():
         print('Training took: ' + str(minutes) + ':' + str(seconds))
         print()
 
-        file = open('../res/evolvedProgress.txt', 'a+')
-        file.write(str(average_reward) + ' ' + str(maxReward) + '\n')
+        #file = open('../res/evolvedProgress.txt', 'a+')
+        #file.write(str(average_reward) + ' ' + str(maxReward) + '\n')
         
         torch.save(self.net.state_dict(), '../res/models/evolved1.pth')
 
