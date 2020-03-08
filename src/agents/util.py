@@ -15,7 +15,6 @@ class Util():
 
         if torch.cuda.is_available():
             self.device = torch.device('cuda')
-            self.net.cuda()
         else:
             self.device = torch.device('cpu')
 

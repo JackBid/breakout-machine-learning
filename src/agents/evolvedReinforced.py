@@ -45,8 +45,8 @@ class EvolvedReinforcedAgent():
     # Add random noise to parameters
     def addParamNoise(self, sigma):
         for param in self.net.parameters():
-            noise = torch.FloatTensor(param.shape).uniform_(-sigma, sigma)
-            param.data = torch.add(param, noise)
+            noise = torch.FloatTensor(param.shape).uniform_(-sigma, sigma).to(self.device)
+            param.data = torch.add(param, noise).to(self.device)
 
     def calculateActionLoss(self, action, target):
         if action == target:
