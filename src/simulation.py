@@ -3,6 +3,7 @@ from agents.supervised import SupervisedAgent
 from agents.reinforced import BasicReinforcedAgent
 from agents.transfer import TransferAgent
 from agents.evolvedReinforced import EvolvedReinforcedAgent
+from agents.dqnAgent import DQNAgent
 from agents.util import Util
 import numpy as np
 import torch
@@ -181,11 +182,14 @@ class Simulation():
 #transferAgent.supervisedLearn(100)
 #
 rl = EvolvedReinforcedAgent()
-rl.train(10)
+rl.train(100)
 
 #rl = BasicReinforcedAgent()
 #rl.train(50)
 
 #sup = SupervisedAgent('evolved', True, True)
 #sup.train(50)
+
+#dqn = DQNAgent()
+#dqn.train()
 

@@ -26,7 +26,7 @@ class SupervisedAgent():
             if network == 'cem':
                 self.saveFile = '../res/models/cem.pth'
             if network == 'evolved':
-                self.saveFile = '../res/models/evolved.pth'
+                self.saveFile = '../res/models/evolved1.pth'
         else:
             self.saveFile = '../res/models/' + network + '_' + saveFile + '.pth'
 
@@ -70,6 +70,8 @@ class SupervisedAgent():
                 outputs = self.net(tensorInput.float())
 
                 target = self.testingData[i].clone()
+
+                print(target)
 
                 #outputs = F.softmax(outputs, dim=0)
                 outputs = outputs.unsqueeze(dim=0)

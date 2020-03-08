@@ -83,7 +83,6 @@ class Util():
     # Get the action the network takes
     def tensorAction(self, net, tensorIn):
         output = net(tensorIn)
-
         maxVal = torch.max(output, 0)
         return int(maxVal[1])
 
@@ -130,3 +129,8 @@ class Util():
         loss = torch.mul(outputs, targetLoss)
         loss = torch.sum(torch.abs(loss))
         return loss
+
+    def actionToTensor(self, action):
+        arr = [0,0,0,0]
+        arr[action] = 1
+        return torch.tensor(arr)
