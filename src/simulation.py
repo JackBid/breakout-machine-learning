@@ -65,7 +65,7 @@ class Simulation():
             # One game iteration
             while True:
                 
-                self.env.render()
+                #self.env.render()
                 observations.append(observation)
 
                 ballY = int(observation[101])
@@ -176,19 +176,19 @@ class Simulation():
 #sim.cem(20)
 
 #sim = Simulation('evolved', True)
-#sim.run(5)
+#sim.run(500)
 
 #transferAgent = TransferAgent(True, True, False)
 #transferAgent.supervisedLearn(100)
 #
 rl = EvolvedReinforcedAgent()
-rl.train(trainingLength)
+rl.train(50)
 
 #rl = BasicReinforcedAgent()
 #rl.train(50)
 
 #sup = SupervisedAgent('evolved', True, True)
-#sup.train(50)
+#sup.train(500)
 
 #dqn = DQNAgent()
 #dqn.train()

@@ -126,6 +126,58 @@ class EvolvedReinforcedAgent():
         observation = observations[0]
         
         while True:
+
+            #self.env.render()
+
+            ballY = int(observation[101])
+            ram = self.util.observationToTensor(observation)
+
+            states.append(self.env.ale.cloneState())
+            newObservations.append(observation)
+
+            action = self.util.tensorAction(self.net, ram)
+
+            observation, reward, done, info = self.env.step(action)
+
+            newActions.append(action)
+
+            newScore += reward
+
+            if info['ale.lives'] < lives:
+                newScore -= 100
+                lives -= 1
+
+            t+=1
+
+            if t==sampleLength:
+                if newScore > originalScore:
+                    self.learnFromReplay(newObservations, newActions, states)
+                self.restoreParams(prevParams)
+                return
+
+
+        return
+
+    def replayDeath(self, startingState, observations, actions, lives, sampleLength):
+        
+        prevParams = self.getParams()
+
+        self.addParamNoise(0.005)
+
+        # restore the starting state (since death)
+        self.env.ale.restoreState(startingState)
+
+        newObservations = []
+        newActions = []
+        states = []
+
+        didDie = False
+        t = 0
+        newScore = 0
+
+        observation = observations[0]
+        
+        while True:
             
             #self.env.render()
 
@@ -153,9 +205,9 @@ class EvolvedReinforcedAgent():
 
             t+=1
 
-            if t==sampleLength:
+            if t==sampleLength+5:
                 if not didDie:
-                    self.learnFromReplay(newObservations[0:sampleLength], newActions[0:sampleLength], states[0:sampleLength])
+                    self.learnFromReplay(newObservations[0:sampleLength-5], newActions[0:sampleLength-5], states[0:sampleLength-5])
                 self.restoreParams(prevParams)
                 break
 
@@ -174,17 +226,24 @@ class EvolvedReinforcedAgent():
         timeLimit = 0
         sampleScore = 0
         lives = 5
-        maxSampleLength = 10
+        maxSampleLength = 20
        
         observations = []
         actions = []
         states = []
+        
+        sampleRate = 0.001
+        sampleCounter = 0
+        sampleScore = 0
 
         observation = self.env.reset()
 
         while True:
 
             #self.env.render()
+            
+            if random.uniform(0,1) < 0.001:
+                record = True
 
             paddleMid = int(observation[72]) + 8
             ballMid = int(observation[99]) + 1
@@ -206,26 +265,36 @@ class EvolvedReinforcedAgent():
             observation, reward, done, info = self.env.step(action)
 
             if info['ale.lives'] < lives:
-                
+                sampleScore -= 100
+                lives -= 1
+                '''
                 if t < maxSampleLength:
                     sampleLength = t
                 else:
                     sampleLength = maxSampleLength
 
-                self.replaySample(states[-sampleLength], observations[-sampleLength:], actions[-sampleLength:], lives, sampleLength, sampleScore)
+                self.replayDeath(states[-sampleLength], observations[-sampleLength::], actions[-sampleLength::], lives, sampleLength)
                 self.env.ale.restoreState(states[-1])
                 observation = observations[-1]
                 lives -= 1 
-                t = 0
-                states = []
-                observations = []
-                actionSamples = []
+                t = 0'''
 
             iteration_reward += reward
-            sampleScore += reward
+            if record:
+                sampleScore += reward
+                sampleCounter += 1
+
+            if sampleCounter == maxSampleLength:
+                self.replaySample(states[-maxSampleLength], observations[-maxSampleLength::], actions[-maxSampleLength::], lives, maxSampleLength, sampleScore)
+                self.env.ale.restoreState(states[-1])
+                observation = observations[-1]
+                sampleScore = 0
+                sampleCounter = 0
+                record = False
+
             t += 1
 
-            if done:    
+            if done:
                 return iteration_reward, t
 
 
@@ -271,9 +340,9 @@ class EvolvedReinforcedAgent():
         for i_episode in range(iterations):
 
             # One complete game
-            #print('Starting game: ' + str(i_episode))
+            print('Starting game: ' + str(i_episode))
             iteration_reward, t = self.gameCycle(i_episode)
-            #print('Game ' + str(i_episode) + ' reward: ' + str(iteration_reward) + '\n')
+            print('Game ' + str(i_episode) + ' reward: ' + str(iteration_reward) + '\n')
                 
             totalReward += iteration_reward
             if iteration_reward > maxReward:
