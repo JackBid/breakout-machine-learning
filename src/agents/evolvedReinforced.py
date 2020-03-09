@@ -80,8 +80,8 @@ class EvolvedReinforcedAgent():
             self.optimizer.zero_grad()
 
             output = self.util.getScaledOutput(self.net, ram)
-            target = self.util.actionToTensor(newActions[i]).float()
-            loss = self.criterion(output, target)
+            target = self.util.actionToTensor(newActions[i]).float().to(self.device)
+            loss = self.criterion(output, target).to(self.device)
            # if action == 1 and newActions[i] == 1:
             #print(output)
             #print(target)
