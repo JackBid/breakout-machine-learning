@@ -36,9 +36,9 @@ class EvolvedReinforcedAgent():
         # Create a gym environment (game environment)
         self.env = gym.make('Breakout-ram-v0')
         self.env.frameskip = 0
-        
-        self.explorationRate = 0.05
 
+        # Learning parameters
+        self.sampleRate = 0.001
         self.criterion = nn.MSELoss()
         self.optimizer = optim.Adam(self.net.parameters())
 
@@ -47,16 +47,6 @@ class EvolvedReinforcedAgent():
         for param in self.net.parameters():
             noise = torch.FloatTensor(param.shape).uniform_(-sigma, sigma).to(self.device)
             param.data = torch.add(param, noise).to(self.device)
-
-    def calculateActionLoss(self, action, target):
-        if action == target:
-            loss = 0
-        elif (action == 2 and target == 3) or (action == 3 and target == 2):
-            loss = 0.1
-        else:
-            loss = 0.05
-
-        return torch.tensor(loss)
 
     def learnFromReplay(self, newObservations, newActions, newStates):
 
@@ -109,7 +99,6 @@ class EvolvedReinforcedAgent():
     def replaySample(self, startingState, observations, actions, lives, sampleLength, originalScore):
         
         prevParams = self.getParams()
-
         self.addParamNoise(0.005)
 
         # restore the starting state (since death)
@@ -141,77 +130,20 @@ class EvolvedReinforcedAgent():
 
             newActions.append(action)
 
-            newScore += reward
+            if t <= sampleLength:
+                newScore += reward
 
             if info['ale.lives'] < lives:
                 newScore -= 100
                 lives -= 1
 
-            t+=1
+            t += 1
 
-            if t==sampleLength:
+            if t == sampleLength + 5 or done:
                 if newScore > originalScore:
-                    self.learnFromReplay(newObservations, newActions, states)
+                    self.learnFromReplay(newObservations[:-5], newActions[:-5], states[:-5])
                 self.restoreParams(prevParams)
                 return
-
-
-        return
-
-    def replayDeath(self, startingState, observations, actions, lives, sampleLength):
-        
-        prevParams = self.getParams()
-
-        self.addParamNoise(0.005)
-
-        # restore the starting state (since death)
-        self.env.ale.restoreState(startingState)
-
-        newObservations = []
-        newActions = []
-        states = []
-
-        didDie = False
-        t = 0
-        newScore = 0
-
-        observation = observations[0]
-        
-        while True:
-            
-            #self.env.render()
-
-            ballY = int(observation[101])
-            ram = self.util.observationToTensor(observation)
-
-            states.append(self.env.ale.cloneState())
-            newObservations.append(observation)
-
-            if ballY > 200 or ballY <= 0:
-                action = 1#config.ACTION_FIRE
-                self.restoreParams(prevParams)
-                return
-            else:
-                action = self.util.tensorAction(self.net, ram)
-
-            observation, reward, done, info = self.env.step(action)
-
-            newActions.append(action)
-
-            newScore += reward
-
-            if info['ale.lives'] < lives:
-                didDie = True
-
-            t+=1
-
-            if t==sampleLength+5:
-                if not didDie:
-                    self.learnFromReplay(newObservations[0:sampleLength-5], newActions[0:sampleLength-5], states[0:sampleLength-5])
-                self.restoreParams(prevParams)
-                break
-
-            #time.sleep(0.5)
 
         return
 
@@ -232,7 +164,6 @@ class EvolvedReinforcedAgent():
         actions = []
         states = []
         
-        sampleRate = 0.001
         sampleCounter = 0
         sampleScore = 0
 
@@ -242,7 +173,7 @@ class EvolvedReinforcedAgent():
 
             #self.env.render()
             
-            if random.uniform(0,1) < 0.001:
+            if random.uniform(0,1) < self.sampleRate:
                 record = True
 
             paddleMid = int(observation[72]) + 8
@@ -267,17 +198,6 @@ class EvolvedReinforcedAgent():
             if info['ale.lives'] < lives:
                 sampleScore -= 100
                 lives -= 1
-                '''
-                if t < maxSampleLength:
-                    sampleLength = t
-                else:
-                    sampleLength = maxSampleLength
-
-                self.replayDeath(states[-sampleLength], observations[-sampleLength::], actions[-sampleLength::], lives, sampleLength)
-                self.env.ale.restoreState(states[-1])
-                observation = observations[-1]
-                lives -= 1 
-                t = 0'''
 
             iteration_reward += reward
             if record:
@@ -324,7 +244,7 @@ class EvolvedReinforcedAgent():
         #file = open('../res/evolvedProgress.txt', 'a+')
         #file.write(str(average_reward) + ' ' + str(maxReward) + '\n')
         
-        torch.save(self.net.state_dict(), '../res/models/evolved1.pth')
+        torch.save(self.net.state_dict(), '../res/models/evolved2.pth')
 
         maxReward = 0
         total = 0
@@ -340,9 +260,8 @@ class EvolvedReinforcedAgent():
         for i_episode in range(iterations):
 
             # One complete game
-            print('Starting game: ' + str(i_episode))
             iteration_reward, t = self.gameCycle(i_episode)
-            print('Game ' + str(i_episode) + ' reward: ' + str(iteration_reward) + '\n')
+            print('Game ' + str(i_episode) + ' reward: ' + str(iteration_reward))
                 
             totalReward += iteration_reward
             if iteration_reward > maxReward:
@@ -351,7 +270,7 @@ class EvolvedReinforcedAgent():
             if i_episode != 0 and i_episode % 100 == 0: 
                 # Calcuate how long this training took
                 elapsed_time = time.time() - startTime
-                self.processTraining(totalReward, iterations, maxReward, elapsed_time)
+                self.processTraining(totalReward, i_episode+1, maxReward, elapsed_time)
                 startTime = time.time()
         
         # One all games finished process training again
