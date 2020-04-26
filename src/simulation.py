@@ -14,14 +14,26 @@ import os
 import sys
 
 # Global variable for command line arguments
-if len(sys.argv) == 1:
-    trainingLength = 5001
+render = False
+agentName = 'evolvedReinforced'
+simulationLength = 100
+
+# Just agent name provided
+if len(sys.argv) == 2:
+    agentName = sys.argv[1]
+# Agent name and simulation length provided
+elif len(sys.argv) == 3:
+    agentName = sys.argv[1]
+    simulationLength = int(sys.argv[2])
+# All three arguments provided
 else:
-    trainingLength = int(sys.argv[1])
+    agentName = sys.argv[1]
+    simulationLength = int(sys.argv[2])
+    render = bool(sys.argv[3])
 
 class Simulation():
 
-    def __init__(self, agent='supervised', record=False):
+    def __init__(self, agent='supervised', render=False, record=False):
 
         self.util = Util()
 
@@ -39,6 +51,7 @@ class Simulation():
 
         # Initialise other variables
         self.record = record
+        self.render = render
         self.agentType = type(self.agent).__name__
 
     # Run the simulation
@@ -50,8 +63,6 @@ class Simulation():
         for i_episode in range(iterations):
 
             observation = self.env.reset()
-            #self.env.ale.restoreState(2803055230704)
-           # observation, reward, done, info = self.env.step(0)
 
             # Every observation and action is stored and then saved to a text file if record is set to true
             observations = []
@@ -63,7 +74,9 @@ class Simulation():
             # One game iteration
             while True:
                 
-                #self.env.render()
+                if self.render:
+                    self.env.render()
+
                 observations.append(observation)
 
                 ballY = int(observation[101])
@@ -169,26 +182,13 @@ class Simulation():
                 torch.save(rAgent.net.state_dict(), '../res/models/cem.pth')
 
 
-#agent = SupervisedAgent('fc364', True, False)
-sim = Simulation('supervised', False)
-sim.run(100)
-#sim.cem(20)
+if agentName.lower() == 'supervised':
+    sim = Simulation('supervised', render)
+    sim.run(simulationLength)
+elif agentName.lower() == 'evolvedreinforced':
+    sim = Simulation('evolvedReinforced', render)
+    sim.run(simulationLength)
+else:
+    print('unknown agent.')
 
-#sim = Simulation('evolved', True)
-#sim.run(500)
-
-#transferAgent = TransferAgent(True, True, False)
-#transferAgent.supervisedLearn(100)
-#
-#rl = EvolvedReinforcedAgent()
-#rl.train(500)
-
-#rl = BasicReinforcedAgent()
-#rl.train(50)
-
-#sup = SupervisedAgent('evolved', True, True)
-#sup.train(500)
-
-#dqn = DQNAgent()
-#dqn.train()
 
