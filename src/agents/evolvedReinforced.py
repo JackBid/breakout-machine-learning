@@ -31,22 +31,25 @@ class EvolvedReinforcedAgent():
         # Create a new network
         self.net = FullyConnected(128, 10)
         self.net.float()
+
+        # Where to save and load model weights
+        self.saveFile = '../res/models/reinforced.pth'
         
         # Load weights for the network using cuda or cpu
         if torch.cuda.is_available():
             self.device = torch.device('cuda')
             self.net.cuda()
-            self.net.load_state_dict(torch.load('../res/models/evolved2.pth'))
+            self.net.load_state_dict(torch.load(self.saveFIle))
         else:
             self.device = torch.device('cpu')
-            self.net.load_state_dict(torch.load('../res/models/evolved2.pth', map_location=('cpu')))
+            self.net.load_state_dict(torch.load(self.saveFile, map_location=('cpu')))
 
         # Create a gym environment (game environment)
         self.env = gym.make('Breakout-ram-v0')
         self.env.frameskip = 0
 
         # Learning parameters
-        self.sampleRate = 0.005
+        self.sampleRate = 0.01
         self.maxSampleLength = 20
         self.networkParameterNoise = 0.015
         self.minimumNetworkParameterNoise = 0.0015
@@ -307,7 +310,7 @@ class EvolvedReinforcedAgent():
             file = open('../res/evolvedProgress.txt', 'a+')
             file.write(str(average_reward) + ' ' + str(maxReward) + '\n')
         
-        torch.save(self.net.state_dict(), '../res/models/evolved2.pth')
+        torch.save(self.net.state_dict(), self.saveFile)
 
         maxReward = 0
         total = 0

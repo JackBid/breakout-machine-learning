@@ -31,9 +31,7 @@ class Simulation():
 
         # Create an agent for the simulation
         if agent == 'supervised':
-            self.agent = SupervisedAgent('fullyConnected', True)
-        elif agent == 'cem':
-            self.agent = SupervisedAgent('cem', True, False)
+            self.agent = SupervisedAgent()
         elif agent == 'evolved':
             self.agent = EvolvedReinforcedAgent()
         else:
@@ -105,6 +103,7 @@ class Simulation():
                     break
 
                 if done:
+                    print(iteration_reward)
                     break
 
             rewards.append(iteration_reward)
@@ -171,8 +170,8 @@ class Simulation():
 
 
 #agent = SupervisedAgent('fc364', True, False)
-#sim = Simulation('supervised', False)
-#sim.run(100)
+sim = Simulation('supervised', False)
+sim.run(100)
 #sim.cem(20)
 
 #sim = Simulation('evolved', True)
@@ -181,8 +180,8 @@ class Simulation():
 #transferAgent = TransferAgent(True, True, False)
 #transferAgent.supervisedLearn(100)
 #
-rl = EvolvedReinforcedAgent()
-rl.train(50)
+#rl = EvolvedReinforcedAgent()
+#rl.train(500)
 
 #rl = BasicReinforcedAgent()
 #rl.train(50)
