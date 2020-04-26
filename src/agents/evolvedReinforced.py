@@ -36,19 +36,21 @@ class EvolvedReinforcedAgent():
         if torch.cuda.is_available():
             self.device = torch.device('cuda')
             self.net.cuda()
-            self.net.load_state_dict(torch.load('../res/models/evolved1.pth'))
+            self.net.load_state_dict(torch.load('../res/models/evolved2.pth'))
         else:
             self.device = torch.device('cpu')
-            self.net.load_state_dict(torch.load('../res/models/evolved1.pth', map_location=('cpu')))
+            self.net.load_state_dict(torch.load('../res/models/evolved2.pth', map_location=('cpu')))
 
         # Create a gym environment (game environment)
         self.env = gym.make('Breakout-ram-v0')
         self.env.frameskip = 0
 
         # Learning parameters
-        self.sampleRate = 0.001
+        self.sampleRate = 0.005
         self.maxSampleLength = 20
-        self.networkParameterNoise = 0.005
+        self.networkParameterNoise = 0.015
+        self.minimumNetworkParameterNoise = 0.0015
+        self.decayRate = 0.999
         self.deathPenalty = 100
         self.learnReplayRate = 3
         self.criterion = nn.MSELoss()
@@ -149,6 +151,10 @@ class EvolvedReinforcedAgent():
         # Save the current network parameters and add noise to the current network
         prevParams = self.getParams()
         self.addParamNoise(self.networkParameterNoise)
+
+        # Decay the parameter noise
+        if self.networkParameterNoise > self.minimumNetworkParameterNoise:
+            self.networkParameterNoise *= self.decayRate
 
         # restore the starting state (since death)
         self.env.ale.restoreState(startingState)
