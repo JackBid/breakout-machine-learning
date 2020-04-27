@@ -13,23 +13,24 @@ import time
 import os
 import sys
 
-# Global variable for command line arguments
-render = False
-agentName = 'evolvedReinforced'
-simulationLength = 100
+if __name__ == '__main__':
+    # Global variable for command line arguments
+    render = False
+    agentName = 'evolvedReinforced'
+    simulationLength = 100
 
-# Just agent name provided
-if len(sys.argv) == 2:
-    agentName = sys.argv[1]
-# Agent name and simulation length provided
-elif len(sys.argv) == 3:
-    agentName = sys.argv[1]
-    simulationLength = int(sys.argv[2])
-# All three arguments provided
-else:
-    agentName = sys.argv[1]
-    simulationLength = int(sys.argv[2])
-    render = bool(sys.argv[3])
+    # Just agent name provided
+    if len(sys.argv) == 2:
+        agentName = sys.argv[1]
+    # Agent name and simulation length provided
+    elif len(sys.argv) == 3:
+        agentName = sys.argv[1]
+        simulationLength = int(sys.argv[2])
+    # All three arguments provided
+    elif len(sys.argv) == 4:
+        agentName = sys.argv[1]
+        simulationLength = int(sys.argv[2])
+        render = bool(sys.argv[3])
 
 class Simulation():
 
@@ -44,7 +45,7 @@ class Simulation():
         # Create an agent for the simulation
         if agent == 'supervised':
             self.agent = SupervisedAgent()
-        elif agent == 'evolved':
+        elif agent == 'evolvedreinforced':
             self.agent = EvolvedReinforcedAgent()
         else:
             self.agent = TrivialAgent()
@@ -182,13 +183,14 @@ class Simulation():
                 torch.save(rAgent.net.state_dict(), '../res/models/cem.pth')
 
 
-if agentName.lower() == 'supervised':
-    sim = Simulation('supervised', render)
-    sim.run(simulationLength)
-elif agentName.lower() == 'evolvedreinforced':
-    sim = Simulation('evolvedReinforced', render)
-    sim.run(simulationLength)
-else:
-    print('unknown agent.')
+if __name__ == '__main__':
+    if agentName.lower() == 'supervised':
+        sim = Simulation('supervised', render)
+        sim.run(simulationLength)
+    elif agentName.lower() == 'evolvedreinforced':
+        sim = Simulation('evolvedReinforced', render)
+        sim.run(simulationLength)
+    else:
+        print('unknown agent.')
 
 

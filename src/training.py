@@ -1,15 +1,7 @@
 from agents.trivial import TrivialAgent
 from agents.supervised import SupervisedAgent
-from agents.reinforced import BasicReinforcedAgent
-from agents.transfer import TransferAgent
 from agents.evolvedReinforced import EvolvedReinforcedAgent
-from agents.dqnAgent import DQNAgent
-from agents.util import Util
-import numpy as np
-import torch
-import config
-import gym
-import time
+
 import os
 import sys
 
