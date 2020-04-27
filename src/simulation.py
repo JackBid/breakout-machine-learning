@@ -34,7 +34,7 @@ if __name__ == '__main__':
 
 class Simulation():
 
-    def __init__(self, agent='supervised', render=False, record=False):
+    def __init__(self, agent='supervised', render=False, debug=True, record=False):
 
         self.util = Util()
 
@@ -53,6 +53,7 @@ class Simulation():
         # Initialise other variables
         self.record = record
         self.render = render
+        self.debug = debug
         self.agentType = type(self.agent).__name__
 
     # Run the simulation
@@ -117,14 +118,17 @@ class Simulation():
                     break
 
                 if done:
-                    print(iteration_reward)
+                    if self.debug:
+                        print(iteration_reward)
                     break
 
             rewards.append(iteration_reward)
         
         averageReward = sum(rewards) / len(rewards)
-        print('Average reward achievied in ' + str(iterations) + ' iterations: ' + str(averageReward))
-        print(rewards)
+        if self.debug:
+            print('Average reward achievied in ' + str(iterations) + ' iterations: ' + str(averageReward))
+            print(rewards)
+        return rewards
 
         self.env.close()
     
@@ -136,52 +140,6 @@ class Simulation():
     
     def meanWeight(self, weights):
         print(weights[0].shape)
-        #for weight in weights:
-
-    def cem(self, n_iterations=500, gamma=1.0, print_every=10, pop_size=10, elite_frac=0.2, sigma=0.05):
-        """PyTorch implementation of the cross-entropy method.
-        
-        Params
-        ======
-            n_iterations (int): maximum number of training iterations
-            max_t (int): maximum number of timesteps per episode
-            gamma (float): discount rate
-            print_every (int): how often to print average score (over last 100 episodes)
-            pop_size (int): size of population at each iteration
-            elite_frac (float): percentage of top performers to use in update
-            sigma (float): standard deviation of additive noise
-        """
-        rAgent = BasicReinforcedAgent()
-
-        with torch.no_grad():
-            fc1_weight = self.agent.net.fc1.weight
-            fc2_weight = self.agent.net.fc2.weight
-
-        n_elite=int(pop_size*elite_frac)
-        scores = []
-        best_fc1_weight = self.getWeightsWithNoise(fc1_weight, sigma)
-        best_fc2_weight = self.getWeightsWithNoise(fc2_weight, sigma)
-
-        maxReward = rAgent.evaluate(best_fc1_weight, best_fc2_weight, gamma=1.0)
-        torch.save(rAgent.net.state_dict(), '../res/models/cem.pth')
-
-        for i_iteration in range(1, n_iterations+1):
-            fc1_weights_pop = [self.getWeightsWithNoise(best_fc1_weight, sigma) for _ in range(pop_size)]
-            fc2_weights_pop = [self.getWeightsWithNoise(best_fc2_weight, sigma) for _ in range(pop_size)]
-            rewards = np.array([rAgent.evaluate(fc1_weights_pop[i], fc2_weights_pop[i], gamma) for i in range(0, len(fc1_weights_pop))])
-
-            elite_idxs = rewards.argsort()[-n_elite:]
-            
-            # Todo: try with mean weights
-
-            best_fc1_weight = fc1_weights_pop[elite_idxs[-1]]
-            best_fc2_weight = fc2_weights_pop[elite_idxs[-1]]
-            reward = rAgent.evaluate(best_fc1_weight, best_fc2_weight, gamma=1.0)
-
-            print(reward)
-            if reward > maxReward:
-                torch.save(rAgent.net.state_dict(), '../res/models/cem.pth')
-
 
 if __name__ == '__main__':
     if agentName.lower() == 'supervised':

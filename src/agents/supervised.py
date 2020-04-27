@@ -7,6 +7,8 @@ import torch.optim as optim
 from nets import FullyConnected, Test
 from agents.util import Util
 
+import os
+
 class SupervisedAgent():
     """ Supervised Learning agent
 
