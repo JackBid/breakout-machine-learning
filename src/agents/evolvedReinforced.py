@@ -46,16 +46,19 @@ class EvolvedReinforcedAgent():
 
         # Create a gym environment (game environment)
         self.env = gym.make('Breakout-ram-v0')
+        self.replayEnv = gym.make('Breakout-ram-v0')
         self.env.frameskip = 0
+        self.replayEnv.frameskip = 0
 
         # Learning parameters
-        self.sampleRate = 0.01
-        self.maxSampleLength = 20
+        self.sampleRate = 0.005
+        self.maxSampleLength = 30
         self.networkParameterNoise = 0.015
         self.minimumNetworkParameterNoise = 0.0015
         self.decayRate = 0.999
         self.deathPenalty = 100
         self.learnReplayRate = 3
+        self.frameBuffer = 10
         self.criterion = nn.MSELoss()
         self.optimizer = optim.Adam(self.net.parameters())
 
@@ -160,7 +163,8 @@ class EvolvedReinforcedAgent():
             self.networkParameterNoise *= self.decayRate
 
         # restore the starting state (since death)
-        self.env.ale.restoreState(startingState)
+        self.replayEnv.reset()
+        self.replayEnv.ale.restoreState(startingState)
 
         # store new observations, actions, states, timesteps and score
         newObservations = []
@@ -174,7 +178,7 @@ class EvolvedReinforcedAgent():
         while True:
             
             if self.render:
-                self.env.render()
+                self.replayEnv.render()
 
             ballY = int(observation[101])
             ram = self.util.observationToTensor(observation)
@@ -184,7 +188,7 @@ class EvolvedReinforcedAgent():
 
             action = self.util.tensorAction(self.net, ram)
 
-            observation, reward, done, info = self.env.step(action)
+            observation, reward, done, info = self.replayEnv.step(action)
             newActions.append(action)
 
             if t <= sampleLength:
@@ -199,11 +203,14 @@ class EvolvedReinforcedAgent():
             
             # If the sample is over (after buffer timesteps)
             # If a higher score was achieved learn from replay
-            if t == sampleLength + 5 or done:
+            if t == sampleLength + self.frameBuffer or done:
                 if newScore > originalScore:
                     self.learnFromReplay(newObservations[:-5], newActions[:-5], states[:-5])
                 self.restoreParams(prevParams)
                 return
+
+            if self.render:
+                time.sleep(0.02)
 
 
     def gameCycle(self):

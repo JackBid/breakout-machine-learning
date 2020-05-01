@@ -4,8 +4,8 @@ class TrivialAgent():
 
     def action(self, observation, t, threshold):
 
-        paddleMid = int(observation[72]) + 14
-        ballMid = int(observation[99]) + 2
+        paddleMid = int(observation[72]) + 13
+        ballMid = int(observation[99])
         ballY = int(observation[101])
 
         if t == 0 or ballY > 200 or ballY == 0:

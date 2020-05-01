@@ -21,13 +21,14 @@ elif len(sys.argv) == 3:
 else:
     agentName = sys.argv[1]
     trainingLength = int(sys.argv[2])
-    render = bool(sys.argv[3])
+    if sys.argv[3].lower() == 'true':
+        render = True
 
 if agentName.lower() == 'supervised':
     supervisedAgent = SupervisedAgent()
     supervisedAgent.train(trainingLength)
 elif agentName.lower() == 'evolvedreinforced':
-    reinforcementAgent = EvolvedReinforcedAgent(render)
+    reinforcementAgent = EvolvedReinforcedAgent(debug=False, render=render)
     reinforcementAgent.train(trainingLength)
 else:
     print('unknown agent.')
