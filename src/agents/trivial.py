@@ -1,5 +1,6 @@
 import config
 
+
 class TrivialAgent():
 
     def action(self, observation, t, threshold):

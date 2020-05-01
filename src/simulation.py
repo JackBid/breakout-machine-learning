@@ -1,17 +1,12 @@
 from agents.trivial import TrivialAgent
 from agents.supervised import SupervisedAgent
-from agents.reinforced import BasicReinforcedAgent
-from agents.transfer import TransferAgent
 from agents.evolvedReinforced import EvolvedReinforcedAgent
-from agents.dqnAgent import DQNAgent
 from agents.util import Util
 import numpy as np
 import torch
 import random
 import config
 import gym
-import time
-import os
 import sys
 
 if __name__ == '__main__':
@@ -32,6 +27,7 @@ if __name__ == '__main__':
         agentName = sys.argv[1]
         simulationLength = int(sys.argv[2])
         render = bool(sys.argv[3])
+
 
 class Simulation():
 
@@ -76,14 +72,14 @@ class Simulation():
 
             # One game iteration
             while True:
-                
+
                 if self.render:
                     self.env.render()
 
                 observations.append(observation)
 
                 ballY = int(observation[101])
-                
+
                 # If the ball is off screen or the game is at the start, fire
                 # Otherwise use the agent to decide action
                 if t == 0 or ballY > 200 or ballY == 0:
@@ -100,22 +96,21 @@ class Simulation():
                 iteration_reward += reward
                 t += 1
 
-                #time.sleep(0.5)
-                
+                # time.sleep(0.5)
+
                 # If the game is finished and record is set to true,
                 # Save the observation and action arrays into a text file
                 if done and self.record and iteration_reward >= 100:
-                    #print("Episode finished after {} timesteps".format(t+1))
-                    #print("iteration reward: " + str(iteration_reward))
+                    # print("Episode finished after {} timesteps".format(t+1))
+                    # print("iteration reward: " + str(iteration_reward))
 
-                    ramData = open("../res/training data/ram100.txt","a")
-                    actionData = open("../res/training data/action100.txt", "a")
-                    
-                    #for observation in observations:
-                        #ramData.write(self.util.arrToString(observation) + '\n')
+                    # ramData = open("../res/training data/ram100.txt","a")
+                    # actionData = open("../res/training data/action100.txt", "a")
+                    # for observation in observations:
+                    # ramData.write(self.util.arrToString(observation) + '\n')
 
-                    #for action in actions:
-                        #actionData.write(str(action) + ' ')
+                    # for action in actions:
+                    # actionData.write(str(action) + ' ')
                     break
 
                 if done:
@@ -124,36 +119,35 @@ class Simulation():
                     break
 
             rewards.append(iteration_reward)
-        
+
         averageReward = sum(rewards) / len(rewards)
         if self.debug:
             print('Average reward achievied in ' + str(iterations) + ' iterations: ' + str(averageReward))
             print(rewards)
 
-        print(self.agentType)
         if self.agentType == 'EvolvedReinforcedAgent':
-            rewards[0] += random.randrange(10,25)
+            rewards[0] += random.randrange(10, 25)
 
         return rewards
 
-    
     def getWeightsWithNoise(self, weights, sigma):
         noise = torch.tensor(np.random.normal(0, sigma, weights.shape))
         signal = weights + noise
-        
+
         return signal
-    
+
     def meanWeight(self, weights):
         print(weights[0].shape)
 
+
 if __name__ == '__main__':
+    if agentName.lower() == 'expertsystem' or agentName.lower() == 'trivial':
+        sim = Simulation('trivial', render)
     if agentName.lower() == 'supervised':
         sim = Simulation('supervised', render)
-        sim.run(simulationLength)
     elif agentName.lower() == 'evolvedreinforced':
         sim = Simulation('evolvedReinforced', render)
-        sim.run(simulationLength)
     else:
         print('unknown agent.')
 
-
+    sim.run(simulationLength)
