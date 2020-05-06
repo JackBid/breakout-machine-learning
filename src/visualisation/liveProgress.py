@@ -57,7 +57,7 @@ def animate(frame, trivialScoresQueue, reinforcedScoresQueue):
 
     # Plot the graph
     ax1.clear()
-    ax1.plot(x1, y1, label='Trivial Agent')
+    ax1.plot(x1, y1, label='Expert System')
     ax1.plot(x2, y2, label='Reinforcement Learning Agent')
     plt.legend()
     plt.xlabel('Number of Games')
@@ -82,8 +82,8 @@ if __name__ == '__main__':
     reinforcedScoresQueue = mp.Queue()
 
     # Create processes for trivial agent, reinforced agent and live plot
-    trivialLiveProgressProcess = mp.Process(target=liveProgress, args=('trivial', 20, trivialScoresQueue))
-    reinforcedScoresProgressProcess = mp.Process(target=liveProgress, args=('evolvedreinforced', 20, reinforcedScoresQueue))
+    trivialLiveProgressProcess = mp.Process(target=liveProgress, args=('trivial', 15, trivialScoresQueue))
+    reinforcedScoresProgressProcess = mp.Process(target=liveProgress, args=('evolvedreinforced', 15, reinforcedScoresQueue))
     plot = mp.Process(target=startPlot, args=(trivialScoresQueue, reinforcedScoresQueue))
 
     # Start processes

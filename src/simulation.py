@@ -125,9 +125,6 @@ class Simulation():
             print('Average reward achievied in ' + str(iterations) + ' iterations: ' + str(averageReward))
             print(rewards)
 
-        if self.agentType == 'EvolvedReinforcedAgent':
-            rewards[0] += random.randrange(10, 25)
-
         return rewards
 
     def getWeightsWithNoise(self, weights, sigma):
@@ -143,7 +140,7 @@ class Simulation():
 if __name__ == '__main__':
     if agentName.lower() == 'expertsystem' or agentName.lower() == 'trivial':
         sim = Simulation('trivial', render)
-    if agentName.lower() == 'supervised':
+    elif agentName.lower() == 'supervised':
         sim = Simulation('supervised', render)
     elif agentName.lower() == 'evolvedreinforced':
         sim = Simulation('evolvedReinforced', render)
