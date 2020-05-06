@@ -4,7 +4,6 @@ from agents.evolvedReinforced import EvolvedReinforcedAgent
 from agents.util import Util
 import numpy as np
 import torch
-import random
 import config
 import gym
 import sys
